@@ -1,0 +1,45 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: S3MPlayer - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x410 /fo"Release/Resource.res" /d "NDEBUG" "D:\Progetti\VisualC\Prova08b_Tiny\Resource.rc"" 
+Creating temporary file "C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP35.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp"Release/S3MPlayer.pch" /YX /Fo"Release/" /Fd"Release/" /FD /Zm150 /c 
+"D:\Progetti\VisualC\Prova08b_Tiny\Main.cpp"
+"D:\Progetti\VisualC\Prova08b_Tiny\FastBMP.cpp"
+"D:\Progetti\VisualC\Prova08b_Tiny\Mtx.cpp"
+"D:\Progetti\VisualC\Prova08b_Tiny\Texter.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP35.tmp" 
+Creating temporary file "C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP36.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dsound.lib dxguid.lib /nologo /subsystem:windows /incremental:no /pdb:"Release/LightForce03.pdb" /machine:I386 /out:"Release/LightForce03.exe" 
+.\Release\Main.obj
+.\Release\FastBMP.obj
+.\Release\Mtx.obj
+.\Release\Texter.obj
+.\Release\Resource.res
+.\ch3play.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP36.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+Main.cpp
+FastBMP.cpp
+Mtx.cpp
+Texter.cpp
+Linking...
+
+
+
+<h3>Results</h3>
+LightForce03.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
