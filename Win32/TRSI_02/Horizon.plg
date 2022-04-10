@@ -1,0 +1,41 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Horizon - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP268.tmp" with contents
+[
+/nologo /Gr /Zp16 /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp"Release/Horizon.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"F:\TRSi\TRSI_02\Intro.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP268.tmp" 
+Creating temporary file "C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP269.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib advapi32.lib shell32.lib uuid.lib winmm.lib dsound.lib dxguid.lib /nologo /subsystem:windows /incremental:no /pdb:"Release/TRSi.pdb" /machine:I386 /nodefaultlib /out:"Release/TRSi.exe" 
+.\Release\degif.obj
+.\Release\Intro.obj
+.\Release\Math3D.obj
+.\rtlib2.obj
+.\tdx.lib
+.\TriFiller.lib
+.\ch3play.lib
+"D:\Microsoft Visual Studio\VC98\Lib\DDRAW.LIB"
+]
+Creating command line "link.exe @C:\DOCUME~1\siriokds\IMPOST~1\Temp\RSP269.tmp"
+<h3>Output Window</h3>
+Compiling...
+Intro.cpp
+F:\TRSi\TRSI_02\scroll.h(128) : warning C4305: '=' : truncation from 'const int' to 'char'
+F:\TRSi\TRSI_02\scroll.h(128) : warning C4309: '=' : truncation of constant value
+Linking...
+
+
+
+<h3>Results</h3>
+TRSi.exe - 0 error(s), 2 warning(s)
+</pre>
+</body>
+</html>

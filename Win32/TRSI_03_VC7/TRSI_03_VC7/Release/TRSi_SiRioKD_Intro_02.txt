@@ -1,0 +1,21 @@
+ScrollText
+----------
+
+Address:	AA24-AE4F	
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890()+,!'@/><:.-"
+
+* Special chars:
+'w' restart
+
+
+Page Texter
+-----------
+
+Addresses: E890=Page1, EA28=Page2,  EBC0=Page3,
+
+Every page is 40x8 uppercase chars.
+matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890()+,!'@/><:.-"
+ 
+* Special chars:
+'q' long wait
+'w' short wait

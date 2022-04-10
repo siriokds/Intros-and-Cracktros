@@ -1,0 +1,12 @@
+#ifndef _RTLIB3_H_
+#define _RTLIB3_H_
+
+double _stdcall _mfloor(double f);
+double _stdcall _mlog(double f);
+double _stdcall _msin(double d);
+double _stdcall _mcos(double d);
+double _stdcall _mpow(double d, double e);
+long   _ftol();
+
+
+#endif

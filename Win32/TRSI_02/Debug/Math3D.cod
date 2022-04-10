@@ -1,0 +1,1051 @@
+	TITLE	D:\Progetti\VisualC\LocklessCube\Math3D.cpp
+	.386P
+include listing.inc
+if @Version gt 510
+.model FLAT
+else
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+_BSS	SEGMENT DWORD USE32 PUBLIC 'BSS'
+_BSS	ENDS
+$$SYMBOLS	SEGMENT BYTE USE32 'DEBSYM'
+$$SYMBOLS	ENDS
+$$TYPES	SEGMENT BYTE USE32 'DEBTYP'
+$$TYPES	ENDS
+_TLS	SEGMENT DWORD USE32 PUBLIC 'TLS'
+_TLS	ENDS
+;	COMDAT ??8@YAHABU_GUID@@0@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?Math3DInit@@YAXXZ
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxCopy@@YAXPAUMatrix3D@@0@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxInit@@YAXPAUMatrix3D@@@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxSetCoords@@YAXPAUMatrix3D@@PAUPoint3D@@1@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxApplyToPoint@@YAXPAUPoint3D@@0PAUMatrix3D@@@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT ?MtxMul@@YAXPAUMatrix3D@@0@Z
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+FLAT	GROUP _DATA, CONST, _BSS
+	ASSUME	CS: FLAT, DS: FLAT, SS: FLAT
+endif
+PUBLIC	?IdentityMatrix@@3UMatrix3D@@A			; IdentityMatrix
+PUBLIC	?SinTable@@3PAMA				; SinTable
+PUBLIC	?CosTable@@3PAMA				; CosTable
+_BSS	SEGMENT
+?SinTable@@3PAMA DD 0afc8H DUP (?)			; SinTable
+?CosTable@@3PAMA DD 01H DUP (?)				; CosTable
+_BSS	ENDS
+_DATA	SEGMENT
+?IdentityMatrix@@3UMatrix3D@@A DD 03f800000r	; 1	; IdentityMatrix
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	03f800000r			; 1
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	03f800000r			; 1
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	000000000r			; 0
+	DD	03f800000r			; 1
+_DATA	ENDS
+PUBLIC	?Math3DInit@@YAXXZ				; Math3DInit
+EXTRN	__fltused:NEAR
+;	COMDAT ?Math3DInit@@YAXXZ
+_TEXT	SEGMENT
+?Math3DInit@@YAXXZ PROC NEAR				; Math3DInit, COMDAT
+
+; 35   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 36   : /*
+; 37   : float   rad;
+; 38   : 		for (int i = 0; i < 36000; i++)
+; 39   :         {
+; 40   :                 rad = ANG2RAD(i)/100;
+; 41   :                 SinTable[i] = sin(rad);
+; 42   :         }
+; 43   : 		CosTable = SinTable + 9000;
+; 44   : */
+; 45   : 
+; 46   : 	SinTable[0] = 0.017453292519943295769236907684886f;
+
+  00009	c7 05 00 00 00
+	00 35 fa 8e 3c	 mov	 DWORD PTR ?SinTable@@3PAMA, 1016003125 ; 3c8efa35H
+
+; 47   : 
+; 48   : 	__asm
+; 49   : 	{
+; 50   : 		pushad
+
+  00013	60		 pushad
+
+; 51   : 
+; 52   : 		finit
+
+  00014	9b db e3	 finit
+
+; 53   : 		lea		edi,SinTable
+
+  00017	8d 3d 00 00 00
+	00		 lea	 edi, DWORD PTR ?SinTable@@3PAMA
+
+; 54   : 		mov		ecx,36000+9000
+
+  0001d	b9 c8 af 00 00	 mov	 ecx, 45000		; 0000afc8H
+
+; 55   : 
+; 56   : 		fld		[edi]				// (inc)
+
+  00022	d9 07		 fld	 DWORD PTR [edi]
+
+; 57   : 		fldz						// (ang)(inc)
+
+  00024	d9 ee		 fldz
+$calcTab$53966:
+
+; 58   : calcTab:
+; 59   : 		fld		st(0)				// (ang)(ang)(inc)
+
+  00026	d9 c0		 fld	 ST(0)
+
+; 60   : 		fsin						// (anS)(ang)(inc)
+
+  00028	d9 fe		 fsin
+
+; 61   : 		fstp	[edi]				// (ang)(inc) put value and pop!
+
+  0002a	d9 1f		 fstp	 DWORD PTR [edi]
+
+; 62   : 		add		edi,4
+
+  0002c	83 c7 04	 add	 edi, 4
+
+; 63   : 		fadd	st,st(1)			// (anN)(PIi)(256)
+
+  0002f	d8 c1		 fadd	 ST(0), ST(1)
+
+; 64   : 		loop	calcTab
+
+  00031	e2 f3		 loop	 $calcTab$53966
+
+; 65   : 
+; 66   : 		finit
+
+  00033	9b db e3	 finit
+
+; 67   : 
+; 68   : 		popad
+
+  00036	61		 popad
+
+; 69   : 	}
+; 70   : 
+; 71   : 
+; 72   : }
+
+  00037	5f		 pop	 edi
+  00038	5e		 pop	 esi
+  00039	5b		 pop	 ebx
+  0003a	8b e5		 mov	 esp, ebp
+  0003c	5d		 pop	 ebp
+  0003d	c3		 ret	 0
+?Math3DInit@@YAXXZ ENDP					; Math3DInit
+_TEXT	ENDS
+PUBLIC	?MtxCopy@@YAXPAUMatrix3D@@0@Z			; MtxCopy
+EXTRN	_memcpy:NEAR
+;	COMDAT ?MtxCopy@@YAXPAUMatrix3D@@0@Z
+_TEXT	SEGMENT
+_Dst$ = 8
+_Src$ = 12
+?MtxCopy@@YAXPAUMatrix3D@@0@Z PROC NEAR			; MtxCopy, COMDAT
+
+; 79   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 80   :         CopyMemory(Dst,Src,sizeof(Matrix3D));
+
+  00009	6a 40		 push	 64			; 00000040H
+  0000b	8b 45 0c	 mov	 eax, DWORD PTR _Src$[ebp]
+  0000e	50		 push	 eax
+  0000f	8b 4d 08	 mov	 ecx, DWORD PTR _Dst$[ebp]
+  00012	51		 push	 ecx
+  00013	e8 00 00 00 00	 call	 _memcpy
+  00018	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 81   : }
+
+  0001b	5f		 pop	 edi
+  0001c	5e		 pop	 esi
+  0001d	5b		 pop	 ebx
+  0001e	8b e5		 mov	 esp, ebp
+  00020	5d		 pop	 ebp
+  00021	c3		 ret	 0
+?MtxCopy@@YAXPAUMatrix3D@@0@Z ENDP			; MtxCopy
+_TEXT	ENDS
+PUBLIC	?MtxInit@@YAXPAUMatrix3D@@@Z			; MtxInit
+;	COMDAT ?MtxInit@@YAXPAUMatrix3D@@@Z
+_TEXT	SEGMENT
+_Dst$ = 8
+?MtxInit@@YAXPAUMatrix3D@@@Z PROC NEAR			; MtxInit, COMDAT
+
+; 86   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 87   :         MtxCopy(Dst, &IdentityMatrix);
+
+  00009	68 00 00 00 00	 push	 OFFSET FLAT:?IdentityMatrix@@3UMatrix3D@@A ; IdentityMatrix
+  0000e	8b 45 08	 mov	 eax, DWORD PTR _Dst$[ebp]
+  00011	50		 push	 eax
+  00012	e8 00 00 00 00	 call	 ?MtxCopy@@YAXPAUMatrix3D@@0@Z ; MtxCopy
+  00017	83 c4 08	 add	 esp, 8
+
+; 88   : }
+
+  0001a	5f		 pop	 edi
+  0001b	5e		 pop	 esi
+  0001c	5b		 pop	 ebx
+  0001d	8b e5		 mov	 esp, ebp
+  0001f	5d		 pop	 ebp
+  00020	c3		 ret	 0
+?MtxInit@@YAXPAUMatrix3D@@@Z ENDP			; MtxInit
+_TEXT	ENDS
+PUBLIC	?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z	; MtxSetPosition
+;	COMDAT ?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z
+_TEXT	SEGMENT
+_Dst$ = 8
+_Pnt$ = 12
+?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z PROC NEAR ; MtxSetPosition, COMDAT
+
+; 94   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 95   :         Dst->_41 = Pnt->X;
+
+  00009	8b 45 08	 mov	 eax, DWORD PTR _Dst$[ebp]
+  0000c	8b 4d 0c	 mov	 ecx, DWORD PTR _Pnt$[ebp]
+  0000f	8b 11		 mov	 edx, DWORD PTR [ecx]
+  00011	89 50 30	 mov	 DWORD PTR [eax+48], edx
+
+; 96   :         Dst->_42 = Pnt->Y;
+
+  00014	8b 45 08	 mov	 eax, DWORD PTR _Dst$[ebp]
+  00017	8b 4d 0c	 mov	 ecx, DWORD PTR _Pnt$[ebp]
+  0001a	8b 51 04	 mov	 edx, DWORD PTR [ecx+4]
+  0001d	89 50 34	 mov	 DWORD PTR [eax+52], edx
+
+; 97   :         Dst->_43 = Pnt->Z;
+
+  00020	8b 45 08	 mov	 eax, DWORD PTR _Dst$[ebp]
+  00023	8b 4d 0c	 mov	 ecx, DWORD PTR _Pnt$[ebp]
+  00026	8b 51 08	 mov	 edx, DWORD PTR [ecx+8]
+  00029	89 50 38	 mov	 DWORD PTR [eax+56], edx
+
+; 98   : }
+
+  0002c	5f		 pop	 edi
+  0002d	5e		 pop	 esi
+  0002e	5b		 pop	 ebx
+  0002f	8b e5		 mov	 esp, ebp
+  00031	5d		 pop	 ebp
+  00032	c3		 ret	 0
+?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z ENDP	; MtxSetPosition
+_TEXT	ENDS
+PUBLIC	?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z	; MtxSetRotation
+PUBLIC	__real@4@4005c800000000000000
+EXTRN	__ftol:NEAR
+;	COMDAT __real@4@4005c800000000000000
+; File D:\Progetti\VisualC\LocklessCube\Math3D.cpp
+CONST	SEGMENT
+__real@4@4005c800000000000000 DD 042c80000r	; 100
+CONST	ENDS
+;	COMDAT ?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z
+_TEXT	SEGMENT
+_Mtx$ = 8
+_Ang$ = 12
+_sinX$ = -4
+_cosX$ = -8
+_sinY$ = -12
+_cosY$ = -16
+_sinZ$ = -20
+_cosZ$ = -24
+_offset$ = -28
+?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z PROC NEAR ; MtxSetRotation, COMDAT
+
+; 104  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 5c	 sub	 esp, 92			; 0000005cH
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 105  : float   sinX,cosX,sinY,cosY,sinZ,cosZ;
+; 106  : 
+; 107  : //        sinX = sin(ANG2RAD(Ang->X));  cosX = cos(ANG2RAD(Ang->X));
+; 108  : //        sinY = sin(ANG2RAD(Ang->Y));  cosY = cos(ANG2RAD(Ang->Y));
+; 109  : //        sinZ = sin(ANG2RAD(Ang->Z));  cosZ = cos(ANG2RAD(Ang->Z));
+; 110  : 
+; 111  : int offset;
+; 112  : 
+; 113  : 		offset = int(Ang->X*100);
+
+  00009	8b 45 0c	 mov	 eax, DWORD PTR _Ang$[ebp]
+  0000c	d9 00		 fld	 DWORD PTR [eax]
+  0000e	d8 0d 00 00 00
+	00		 fmul	 DWORD PTR __real@4@4005c800000000000000
+  00014	e8 00 00 00 00	 call	 __ftol
+  00019	89 45 e4	 mov	 DWORD PTR _offset$[ebp], eax
+
+; 114  :         sinX = SinTable[offset];  cosX = CosTable[offset];
+
+  0001c	8b 4d e4	 mov	 ecx, DWORD PTR _offset$[ebp]
+  0001f	8b 14 8d 00 00
+	00 00		 mov	 edx, DWORD PTR ?SinTable@@3PAMA[ecx*4]
+  00026	89 55 fc	 mov	 DWORD PTR _sinX$[ebp], edx
+  00029	8b 45 e4	 mov	 eax, DWORD PTR _offset$[ebp]
+  0002c	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR ?CosTable@@3PAMA ; CosTable
+  00032	8b 14 81	 mov	 edx, DWORD PTR [ecx+eax*4]
+  00035	89 55 f8	 mov	 DWORD PTR _cosX$[ebp], edx
+
+; 115  : 
+; 116  : 		offset = int(Ang->Y*100);
+
+  00038	8b 45 0c	 mov	 eax, DWORD PTR _Ang$[ebp]
+  0003b	d9 40 04	 fld	 DWORD PTR [eax+4]
+  0003e	d8 0d 00 00 00
+	00		 fmul	 DWORD PTR __real@4@4005c800000000000000
+  00044	e8 00 00 00 00	 call	 __ftol
+  00049	89 45 e4	 mov	 DWORD PTR _offset$[ebp], eax
+
+; 117  :         sinY = SinTable[offset];  cosY = CosTable[offset];
+
+  0004c	8b 4d e4	 mov	 ecx, DWORD PTR _offset$[ebp]
+  0004f	8b 14 8d 00 00
+	00 00		 mov	 edx, DWORD PTR ?SinTable@@3PAMA[ecx*4]
+  00056	89 55 f4	 mov	 DWORD PTR _sinY$[ebp], edx
+  00059	8b 45 e4	 mov	 eax, DWORD PTR _offset$[ebp]
+  0005c	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR ?CosTable@@3PAMA ; CosTable
+  00062	8b 14 81	 mov	 edx, DWORD PTR [ecx+eax*4]
+  00065	89 55 f0	 mov	 DWORD PTR _cosY$[ebp], edx
+
+; 118  : 
+; 119  : 		offset = int(Ang->Z*100);
+
+  00068	8b 45 0c	 mov	 eax, DWORD PTR _Ang$[ebp]
+  0006b	d9 40 08	 fld	 DWORD PTR [eax+8]
+  0006e	d8 0d 00 00 00
+	00		 fmul	 DWORD PTR __real@4@4005c800000000000000
+  00074	e8 00 00 00 00	 call	 __ftol
+  00079	89 45 e4	 mov	 DWORD PTR _offset$[ebp], eax
+
+; 120  :         sinZ = SinTable[offset];  cosZ = CosTable[offset];
+
+  0007c	8b 4d e4	 mov	 ecx, DWORD PTR _offset$[ebp]
+  0007f	8b 14 8d 00 00
+	00 00		 mov	 edx, DWORD PTR ?SinTable@@3PAMA[ecx*4]
+  00086	89 55 ec	 mov	 DWORD PTR _sinZ$[ebp], edx
+  00089	8b 45 e4	 mov	 eax, DWORD PTR _offset$[ebp]
+  0008c	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR ?CosTable@@3PAMA ; CosTable
+  00092	8b 14 81	 mov	 edx, DWORD PTR [ecx+eax*4]
+  00095	89 55 e8	 mov	 DWORD PTR _cosZ$[ebp], edx
+
+; 121  : 
+; 122  :         Mtx->_11 = sinZ*sinY*sinX + cosZ*cosX;
+
+  00098	d9 45 ec	 fld	 DWORD PTR _sinZ$[ebp]
+  0009b	d8 4d f4	 fmul	 DWORD PTR _sinY$[ebp]
+  0009e	d8 4d fc	 fmul	 DWORD PTR _sinX$[ebp]
+  000a1	d9 45 e8	 fld	 DWORD PTR _cosZ$[ebp]
+  000a4	d8 4d f8	 fmul	 DWORD PTR _cosX$[ebp]
+  000a7	de c1		 faddp	 ST(1), ST(0)
+  000a9	8b 45 08	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  000ac	d9 18		 fstp	 DWORD PTR [eax]
+
+; 123  :         Mtx->_12 = cosY*sinX;
+
+  000ae	d9 45 f0	 fld	 DWORD PTR _cosY$[ebp]
+  000b1	d8 4d fc	 fmul	 DWORD PTR _sinX$[ebp]
+  000b4	8b 4d 08	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  000b7	d9 59 04	 fstp	 DWORD PTR [ecx+4]
+
+; 124  :         Mtx->_13 = sinZ*cosX - cosZ*sinY*sinX;
+
+  000ba	d9 45 ec	 fld	 DWORD PTR _sinZ$[ebp]
+  000bd	d8 4d f8	 fmul	 DWORD PTR _cosX$[ebp]
+  000c0	d9 45 e8	 fld	 DWORD PTR _cosZ$[ebp]
+  000c3	d8 4d f4	 fmul	 DWORD PTR _sinY$[ebp]
+  000c6	d8 4d fc	 fmul	 DWORD PTR _sinX$[ebp]
+  000c9	de e9		 fsubp	 ST(1), ST(0)
+  000cb	8b 55 08	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  000ce	d9 5a 08	 fstp	 DWORD PTR [edx+8]
+
+; 125  : 
+; 126  :         Mtx->_21 = sinZ*sinY*cosX - cosZ*sinX;
+
+  000d1	d9 45 ec	 fld	 DWORD PTR _sinZ$[ebp]
+  000d4	d8 4d f4	 fmul	 DWORD PTR _sinY$[ebp]
+  000d7	d8 4d f8	 fmul	 DWORD PTR _cosX$[ebp]
+  000da	d9 45 e8	 fld	 DWORD PTR _cosZ$[ebp]
+  000dd	d8 4d fc	 fmul	 DWORD PTR _sinX$[ebp]
+  000e0	de e9		 fsubp	 ST(1), ST(0)
+  000e2	8b 45 08	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  000e5	d9 58 10	 fstp	 DWORD PTR [eax+16]
+
+; 127  :         Mtx->_22 = cosY*cosX;
+
+  000e8	d9 45 f0	 fld	 DWORD PTR _cosY$[ebp]
+  000eb	d8 4d f8	 fmul	 DWORD PTR _cosX$[ebp]
+  000ee	8b 4d 08	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  000f1	d9 59 14	 fstp	 DWORD PTR [ecx+20]
+
+; 128  :         Mtx->_23 = -cosZ*sinY*cosX - sinZ*sinX;
+
+  000f4	d9 45 e8	 fld	 DWORD PTR _cosZ$[ebp]
+  000f7	d9 e0		 fchs
+  000f9	d8 4d f4	 fmul	 DWORD PTR _sinY$[ebp]
+  000fc	d8 4d f8	 fmul	 DWORD PTR _cosX$[ebp]
+  000ff	d9 45 ec	 fld	 DWORD PTR _sinZ$[ebp]
+  00102	d8 4d fc	 fmul	 DWORD PTR _sinX$[ebp]
+  00105	de e9		 fsubp	 ST(1), ST(0)
+  00107	8b 55 08	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  0010a	d9 5a 18	 fstp	 DWORD PTR [edx+24]
+
+; 129  : 
+; 130  :         Mtx->_31 = -sinZ*cosY;
+
+  0010d	d9 45 ec	 fld	 DWORD PTR _sinZ$[ebp]
+  00110	d9 e0		 fchs
+  00112	d8 4d f0	 fmul	 DWORD PTR _cosY$[ebp]
+  00115	8b 45 08	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  00118	d9 58 20	 fstp	 DWORD PTR [eax+32]
+
+; 131  :         Mtx->_32 = sinY;
+
+  0011b	8b 4d 08	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  0011e	8b 55 f4	 mov	 edx, DWORD PTR _sinY$[ebp]
+  00121	89 51 24	 mov	 DWORD PTR [ecx+36], edx
+
+; 132  :         Mtx->_33 = cosZ*cosY;
+
+  00124	d9 45 e8	 fld	 DWORD PTR _cosZ$[ebp]
+  00127	d8 4d f0	 fmul	 DWORD PTR _cosY$[ebp]
+  0012a	8b 45 08	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  0012d	d9 58 28	 fstp	 DWORD PTR [eax+40]
+
+; 133  : }
+
+  00130	5f		 pop	 edi
+  00131	5e		 pop	 esi
+  00132	5b		 pop	 ebx
+  00133	8b e5		 mov	 esp, ebp
+  00135	5d		 pop	 ebp
+  00136	c3		 ret	 0
+?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z ENDP	; MtxSetRotation
+_TEXT	ENDS
+PUBLIC	?MtxSetCoords@@YAXPAUMatrix3D@@PAUPoint3D@@1@Z	; MtxSetCoords
+;	COMDAT ?MtxSetCoords@@YAXPAUMatrix3D@@PAUPoint3D@@1@Z
+_TEXT	SEGMENT
+_Mtx$ = 8
+_Pos$ = 12
+_Ang$ = 16
+?MtxSetCoords@@YAXPAUMatrix3D@@PAUPoint3D@@1@Z PROC NEAR ; MtxSetCoords, COMDAT
+
+; 138  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 139  :         MtxInit(Mtx);
+
+  00009	8b 45 08	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  0000c	50		 push	 eax
+  0000d	e8 00 00 00 00	 call	 ?MtxInit@@YAXPAUMatrix3D@@@Z ; MtxInit
+  00012	83 c4 04	 add	 esp, 4
+
+; 140  :         MtxSetPosition(Mtx, Pos);
+
+  00015	8b 4d 0c	 mov	 ecx, DWORD PTR _Pos$[ebp]
+  00018	51		 push	 ecx
+  00019	8b 55 08	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  0001c	52		 push	 edx
+  0001d	e8 00 00 00 00	 call	 ?MtxSetPosition@@YAXPAUMatrix3D@@PAUPoint3D@@@Z ; MtxSetPosition
+  00022	83 c4 08	 add	 esp, 8
+
+; 141  :         MtxSetRotation(Mtx, Ang);
+
+  00025	8b 45 10	 mov	 eax, DWORD PTR _Ang$[ebp]
+  00028	50		 push	 eax
+  00029	8b 4d 08	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  0002c	51		 push	 ecx
+  0002d	e8 00 00 00 00	 call	 ?MtxSetRotation@@YAXPAUMatrix3D@@PAUPoint3D@@@Z ; MtxSetRotation
+  00032	83 c4 08	 add	 esp, 8
+
+; 142  : }
+
+  00035	5f		 pop	 edi
+  00036	5e		 pop	 esi
+  00037	5b		 pop	 ebx
+  00038	8b e5		 mov	 esp, ebp
+  0003a	5d		 pop	 ebp
+  0003b	c3		 ret	 0
+?MtxSetCoords@@YAXPAUMatrix3D@@PAUPoint3D@@1@Z ENDP	; MtxSetCoords
+_TEXT	ENDS
+PUBLIC	?MtxApplyToPoint@@YAXPAUPoint3D@@0PAUMatrix3D@@@Z ; MtxApplyToPoint
+;	COMDAT ?MtxApplyToPoint@@YAXPAUPoint3D@@0PAUMatrix3D@@@Z
+_TEXT	SEGMENT
+_Dst$ = 8
+_Src$ = 12
+_Mtx$ = 16
+?MtxApplyToPoint@@YAXPAUPoint3D@@0PAUMatrix3D@@@Z PROC NEAR ; MtxApplyToPoint, COMDAT
+
+; 147  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+
+; 148  :         Dst->X = Src->X * Mtx->_11 + Src->Y * Mtx->_21 + Src->Z * Mtx->_31 + Mtx->_41;
+
+  00009	8b 45 0c	 mov	 eax, DWORD PTR _Src$[ebp]
+  0000c	8b 4d 10	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  0000f	d9 00		 fld	 DWORD PTR [eax]
+  00011	d8 09		 fmul	 DWORD PTR [ecx]
+  00013	8b 55 0c	 mov	 edx, DWORD PTR _Src$[ebp]
+  00016	8b 45 10	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  00019	d9 42 04	 fld	 DWORD PTR [edx+4]
+  0001c	d8 48 10	 fmul	 DWORD PTR [eax+16]
+  0001f	de c1		 faddp	 ST(1), ST(0)
+  00021	8b 4d 0c	 mov	 ecx, DWORD PTR _Src$[ebp]
+  00024	8b 55 10	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  00027	d9 41 08	 fld	 DWORD PTR [ecx+8]
+  0002a	d8 4a 20	 fmul	 DWORD PTR [edx+32]
+  0002d	de c1		 faddp	 ST(1), ST(0)
+  0002f	8b 45 10	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  00032	d8 40 30	 fadd	 DWORD PTR [eax+48]
+  00035	8b 4d 08	 mov	 ecx, DWORD PTR _Dst$[ebp]
+  00038	d9 19		 fstp	 DWORD PTR [ecx]
+
+; 149  :         Dst->Y = Src->X * Mtx->_12 + Src->Y * Mtx->_22 + Src->Z * Mtx->_32 + Mtx->_42;
+
+  0003a	8b 55 0c	 mov	 edx, DWORD PTR _Src$[ebp]
+  0003d	8b 45 10	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  00040	d9 02		 fld	 DWORD PTR [edx]
+  00042	d8 48 04	 fmul	 DWORD PTR [eax+4]
+  00045	8b 4d 0c	 mov	 ecx, DWORD PTR _Src$[ebp]
+  00048	8b 55 10	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  0004b	d9 41 04	 fld	 DWORD PTR [ecx+4]
+  0004e	d8 4a 14	 fmul	 DWORD PTR [edx+20]
+  00051	de c1		 faddp	 ST(1), ST(0)
+  00053	8b 45 0c	 mov	 eax, DWORD PTR _Src$[ebp]
+  00056	8b 4d 10	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  00059	d9 40 08	 fld	 DWORD PTR [eax+8]
+  0005c	d8 49 24	 fmul	 DWORD PTR [ecx+36]
+  0005f	de c1		 faddp	 ST(1), ST(0)
+  00061	8b 55 10	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  00064	d8 42 34	 fadd	 DWORD PTR [edx+52]
+  00067	8b 45 08	 mov	 eax, DWORD PTR _Dst$[ebp]
+  0006a	d9 58 04	 fstp	 DWORD PTR [eax+4]
+
+; 150  :         Dst->Z = Src->X * Mtx->_13 + Src->Y * Mtx->_23 + Src->Z * Mtx->_33 + Mtx->_43;
+
+  0006d	8b 4d 0c	 mov	 ecx, DWORD PTR _Src$[ebp]
+  00070	8b 55 10	 mov	 edx, DWORD PTR _Mtx$[ebp]
+  00073	d9 01		 fld	 DWORD PTR [ecx]
+  00075	d8 4a 08	 fmul	 DWORD PTR [edx+8]
+  00078	8b 45 0c	 mov	 eax, DWORD PTR _Src$[ebp]
+  0007b	8b 4d 10	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  0007e	d9 40 04	 fld	 DWORD PTR [eax+4]
+  00081	d8 49 18	 fmul	 DWORD PTR [ecx+24]
+  00084	de c1		 faddp	 ST(1), ST(0)
+  00086	8b 55 0c	 mov	 edx, DWORD PTR _Src$[ebp]
+  00089	8b 45 10	 mov	 eax, DWORD PTR _Mtx$[ebp]
+  0008c	d9 42 08	 fld	 DWORD PTR [edx+8]
+  0008f	d8 48 28	 fmul	 DWORD PTR [eax+40]
+  00092	de c1		 faddp	 ST(1), ST(0)
+  00094	8b 4d 10	 mov	 ecx, DWORD PTR _Mtx$[ebp]
+  00097	d8 41 38	 fadd	 DWORD PTR [ecx+56]
+  0009a	8b 55 08	 mov	 edx, DWORD PTR _Dst$[ebp]
+  0009d	d9 5a 08	 fstp	 DWORD PTR [edx+8]
+
+; 151  : }
+
+  000a0	5f		 pop	 edi
+  000a1	5e		 pop	 esi
+  000a2	5b		 pop	 ebx
+  000a3	8b e5		 mov	 esp, ebp
+  000a5	5d		 pop	 ebp
+  000a6	c3		 ret	 0
+?MtxApplyToPoint@@YAXPAUPoint3D@@0PAUMatrix3D@@@Z ENDP	; MtxApplyToPoint
+_TEXT	ENDS
+PUBLIC	?MtxMul@@YAXPAUMatrix3D@@0@Z			; MtxMul
+;	COMDAT ?MtxMul@@YAXPAUMatrix3D@@0@Z
+_TEXT	SEGMENT
+_a$ = 8
+_b$ = 12
+_temp$ = -64
+?MtxMul@@YAXPAUMatrix3D@@0@Z PROC NEAR			; MtxMul, COMDAT
+
+; 159  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	81 ec 80 00 00
+	00		 sub	 esp, 128		; 00000080H
+  00009	53		 push	 ebx
+  0000a	56		 push	 esi
+  0000b	57		 push	 edi
+
+; 160  : Matrix3D temp;
+; 161  : 
+; 162  :   temp._11 = a->_11 * b->_11 + a->_12 * b->_21 + a->_13 * b->_31 + a->_14 * b->_41;
+
+  0000c	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0000f	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00012	d9 00		 fld	 DWORD PTR [eax]
+  00014	d8 09		 fmul	 DWORD PTR [ecx]
+  00016	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00019	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0001c	d9 42 04	 fld	 DWORD PTR [edx+4]
+  0001f	d8 48 10	 fmul	 DWORD PTR [eax+16]
+  00022	de c1		 faddp	 ST(1), ST(0)
+  00024	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00027	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  0002a	d9 41 08	 fld	 DWORD PTR [ecx+8]
+  0002d	d8 4a 20	 fmul	 DWORD PTR [edx+32]
+  00030	de c1		 faddp	 ST(1), ST(0)
+  00032	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00035	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00038	d9 40 0c	 fld	 DWORD PTR [eax+12]
+  0003b	d8 49 30	 fmul	 DWORD PTR [ecx+48]
+  0003e	de c1		 faddp	 ST(1), ST(0)
+  00040	d9 5d c0	 fstp	 DWORD PTR _temp$[ebp]
+
+; 163  :   temp._12 = a->_11 * b->_12 + a->_12 * b->_22 + a->_13 * b->_32 + a->_14 * b->_42;
+
+  00043	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00046	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00049	d9 02		 fld	 DWORD PTR [edx]
+  0004b	d8 48 04	 fmul	 DWORD PTR [eax+4]
+  0004e	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00051	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00054	d9 41 04	 fld	 DWORD PTR [ecx+4]
+  00057	d8 4a 14	 fmul	 DWORD PTR [edx+20]
+  0005a	de c1		 faddp	 ST(1), ST(0)
+  0005c	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0005f	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00062	d9 40 08	 fld	 DWORD PTR [eax+8]
+  00065	d8 49 24	 fmul	 DWORD PTR [ecx+36]
+  00068	de c1		 faddp	 ST(1), ST(0)
+  0006a	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  0006d	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00070	d9 42 0c	 fld	 DWORD PTR [edx+12]
+  00073	d8 48 34	 fmul	 DWORD PTR [eax+52]
+  00076	de c1		 faddp	 ST(1), ST(0)
+  00078	d9 5d c4	 fstp	 DWORD PTR _temp$[ebp+4]
+
+; 164  :   temp._13 = a->_11 * b->_13 + a->_12 * b->_23 + a->_13 * b->_33 + a->_14 * b->_43;
+
+  0007b	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  0007e	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00081	d9 01		 fld	 DWORD PTR [ecx]
+  00083	d8 4a 08	 fmul	 DWORD PTR [edx+8]
+  00086	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00089	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0008c	d9 40 04	 fld	 DWORD PTR [eax+4]
+  0008f	d8 49 18	 fmul	 DWORD PTR [ecx+24]
+  00092	de c1		 faddp	 ST(1), ST(0)
+  00094	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00097	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0009a	d9 42 08	 fld	 DWORD PTR [edx+8]
+  0009d	d8 48 28	 fmul	 DWORD PTR [eax+40]
+  000a0	de c1		 faddp	 ST(1), ST(0)
+  000a2	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  000a5	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  000a8	d9 41 0c	 fld	 DWORD PTR [ecx+12]
+  000ab	d8 4a 38	 fmul	 DWORD PTR [edx+56]
+  000ae	de c1		 faddp	 ST(1), ST(0)
+  000b0	d9 5d c8	 fstp	 DWORD PTR _temp$[ebp+8]
+
+; 165  :   temp._14 = a->_11 * b->_14 + a->_12 * b->_24 + a->_13 * b->_34 + a->_14 * b->_44;
+
+  000b3	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  000b6	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  000b9	d9 00		 fld	 DWORD PTR [eax]
+  000bb	d8 49 0c	 fmul	 DWORD PTR [ecx+12]
+  000be	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  000c1	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  000c4	d9 42 04	 fld	 DWORD PTR [edx+4]
+  000c7	d8 48 1c	 fmul	 DWORD PTR [eax+28]
+  000ca	de c1		 faddp	 ST(1), ST(0)
+  000cc	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  000cf	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  000d2	d9 41 08	 fld	 DWORD PTR [ecx+8]
+  000d5	d8 4a 2c	 fmul	 DWORD PTR [edx+44]
+  000d8	de c1		 faddp	 ST(1), ST(0)
+  000da	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  000dd	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  000e0	d9 40 0c	 fld	 DWORD PTR [eax+12]
+  000e3	d8 49 3c	 fmul	 DWORD PTR [ecx+60]
+  000e6	de c1		 faddp	 ST(1), ST(0)
+  000e8	d9 5d cc	 fstp	 DWORD PTR _temp$[ebp+12]
+
+; 166  : 
+; 167  :   temp._21 = a->_21 * b->_11 + a->_22 * b->_21 + a->_23 * b->_31 + a->_24 * b->_41;
+
+  000eb	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  000ee	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  000f1	d9 42 10	 fld	 DWORD PTR [edx+16]
+  000f4	d8 08		 fmul	 DWORD PTR [eax]
+  000f6	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  000f9	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  000fc	d9 41 14	 fld	 DWORD PTR [ecx+20]
+  000ff	d8 4a 10	 fmul	 DWORD PTR [edx+16]
+  00102	de c1		 faddp	 ST(1), ST(0)
+  00104	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00107	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0010a	d9 40 18	 fld	 DWORD PTR [eax+24]
+  0010d	d8 49 20	 fmul	 DWORD PTR [ecx+32]
+  00110	de c1		 faddp	 ST(1), ST(0)
+  00112	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00115	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00118	d9 42 1c	 fld	 DWORD PTR [edx+28]
+  0011b	d8 48 30	 fmul	 DWORD PTR [eax+48]
+  0011e	de c1		 faddp	 ST(1), ST(0)
+  00120	d9 5d d0	 fstp	 DWORD PTR _temp$[ebp+16]
+
+; 168  :   temp._22 = a->_21 * b->_12 + a->_22 * b->_22 + a->_23 * b->_32 + a->_24 * b->_42;
+
+  00123	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00126	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00129	d9 41 10	 fld	 DWORD PTR [ecx+16]
+  0012c	d8 4a 04	 fmul	 DWORD PTR [edx+4]
+  0012f	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00132	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00135	d9 40 14	 fld	 DWORD PTR [eax+20]
+  00138	d8 49 14	 fmul	 DWORD PTR [ecx+20]
+  0013b	de c1		 faddp	 ST(1), ST(0)
+  0013d	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00140	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00143	d9 42 18	 fld	 DWORD PTR [edx+24]
+  00146	d8 48 24	 fmul	 DWORD PTR [eax+36]
+  00149	de c1		 faddp	 ST(1), ST(0)
+  0014b	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  0014e	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00151	d9 41 1c	 fld	 DWORD PTR [ecx+28]
+  00154	d8 4a 34	 fmul	 DWORD PTR [edx+52]
+  00157	de c1		 faddp	 ST(1), ST(0)
+  00159	d9 5d d4	 fstp	 DWORD PTR _temp$[ebp+20]
+
+; 169  :   temp._23 = a->_21 * b->_13 + a->_22 * b->_23 + a->_23 * b->_33 + a->_24 * b->_43;
+
+  0015c	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0015f	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00162	d9 40 10	 fld	 DWORD PTR [eax+16]
+  00165	d8 49 08	 fmul	 DWORD PTR [ecx+8]
+  00168	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  0016b	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0016e	d9 42 14	 fld	 DWORD PTR [edx+20]
+  00171	d8 48 18	 fmul	 DWORD PTR [eax+24]
+  00174	de c1		 faddp	 ST(1), ST(0)
+  00176	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00179	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  0017c	d9 41 18	 fld	 DWORD PTR [ecx+24]
+  0017f	d8 4a 28	 fmul	 DWORD PTR [edx+40]
+  00182	de c1		 faddp	 ST(1), ST(0)
+  00184	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00187	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0018a	d9 40 1c	 fld	 DWORD PTR [eax+28]
+  0018d	d8 49 38	 fmul	 DWORD PTR [ecx+56]
+  00190	de c1		 faddp	 ST(1), ST(0)
+  00192	d9 5d d8	 fstp	 DWORD PTR _temp$[ebp+24]
+
+; 170  :   temp._24 = a->_21 * b->_14 + a->_22 * b->_24 + a->_23 * b->_34 + a->_24 * b->_44;
+
+  00195	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00198	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0019b	d9 42 10	 fld	 DWORD PTR [edx+16]
+  0019e	d8 48 0c	 fmul	 DWORD PTR [eax+12]
+  001a1	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  001a4	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  001a7	d9 41 14	 fld	 DWORD PTR [ecx+20]
+  001aa	d8 4a 1c	 fmul	 DWORD PTR [edx+28]
+  001ad	de c1		 faddp	 ST(1), ST(0)
+  001af	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  001b2	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  001b5	d9 40 18	 fld	 DWORD PTR [eax+24]
+  001b8	d8 49 2c	 fmul	 DWORD PTR [ecx+44]
+  001bb	de c1		 faddp	 ST(1), ST(0)
+  001bd	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  001c0	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  001c3	d9 42 1c	 fld	 DWORD PTR [edx+28]
+  001c6	d8 48 3c	 fmul	 DWORD PTR [eax+60]
+  001c9	de c1		 faddp	 ST(1), ST(0)
+  001cb	d9 5d dc	 fstp	 DWORD PTR _temp$[ebp+28]
+
+; 171  : 
+; 172  :   temp._31 = a->_31 * b->_11 + a->_32 * b->_21 + a->_33 * b->_31 + a->_34 * b->_41;
+
+  001ce	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  001d1	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  001d4	d9 41 20	 fld	 DWORD PTR [ecx+32]
+  001d7	d8 0a		 fmul	 DWORD PTR [edx]
+  001d9	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  001dc	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  001df	d9 40 24	 fld	 DWORD PTR [eax+36]
+  001e2	d8 49 10	 fmul	 DWORD PTR [ecx+16]
+  001e5	de c1		 faddp	 ST(1), ST(0)
+  001e7	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  001ea	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  001ed	d9 42 28	 fld	 DWORD PTR [edx+40]
+  001f0	d8 48 20	 fmul	 DWORD PTR [eax+32]
+  001f3	de c1		 faddp	 ST(1), ST(0)
+  001f5	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  001f8	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  001fb	d9 41 2c	 fld	 DWORD PTR [ecx+44]
+  001fe	d8 4a 30	 fmul	 DWORD PTR [edx+48]
+  00201	de c1		 faddp	 ST(1), ST(0)
+  00203	d9 5d e0	 fstp	 DWORD PTR _temp$[ebp+32]
+
+; 173  :   temp._32 = a->_31 * b->_12 + a->_32 * b->_22 + a->_33 * b->_32 + a->_34 * b->_42;
+
+  00206	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00209	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0020c	d9 40 20	 fld	 DWORD PTR [eax+32]
+  0020f	d8 49 04	 fmul	 DWORD PTR [ecx+4]
+  00212	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00215	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00218	d9 42 24	 fld	 DWORD PTR [edx+36]
+  0021b	d8 48 14	 fmul	 DWORD PTR [eax+20]
+  0021e	de c1		 faddp	 ST(1), ST(0)
+  00220	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00223	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00226	d9 41 28	 fld	 DWORD PTR [ecx+40]
+  00229	d8 4a 24	 fmul	 DWORD PTR [edx+36]
+  0022c	de c1		 faddp	 ST(1), ST(0)
+  0022e	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00231	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00234	d9 40 2c	 fld	 DWORD PTR [eax+44]
+  00237	d8 49 34	 fmul	 DWORD PTR [ecx+52]
+  0023a	de c1		 faddp	 ST(1), ST(0)
+  0023c	d9 5d e4	 fstp	 DWORD PTR _temp$[ebp+36]
+
+; 174  :   temp._33 = a->_31 * b->_13 + a->_32 * b->_23 + a->_33 * b->_33 + a->_34 * b->_43;
+
+  0023f	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00242	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00245	d9 42 20	 fld	 DWORD PTR [edx+32]
+  00248	d8 48 08	 fmul	 DWORD PTR [eax+8]
+  0024b	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  0024e	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00251	d9 41 24	 fld	 DWORD PTR [ecx+36]
+  00254	d8 4a 18	 fmul	 DWORD PTR [edx+24]
+  00257	de c1		 faddp	 ST(1), ST(0)
+  00259	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0025c	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0025f	d9 40 28	 fld	 DWORD PTR [eax+40]
+  00262	d8 49 28	 fmul	 DWORD PTR [ecx+40]
+  00265	de c1		 faddp	 ST(1), ST(0)
+  00267	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  0026a	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0026d	d9 42 2c	 fld	 DWORD PTR [edx+44]
+  00270	d8 48 38	 fmul	 DWORD PTR [eax+56]
+  00273	de c1		 faddp	 ST(1), ST(0)
+  00275	d9 5d e8	 fstp	 DWORD PTR _temp$[ebp+40]
+
+; 175  :   temp._34 = a->_31 * b->_14 + a->_32 * b->_24 + a->_33 * b->_34 + a->_34 * b->_44;
+
+  00278	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  0027b	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  0027e	d9 41 20	 fld	 DWORD PTR [ecx+32]
+  00281	d8 4a 0c	 fmul	 DWORD PTR [edx+12]
+  00284	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00287	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  0028a	d9 40 24	 fld	 DWORD PTR [eax+36]
+  0028d	d8 49 1c	 fmul	 DWORD PTR [ecx+28]
+  00290	de c1		 faddp	 ST(1), ST(0)
+  00292	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00295	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00298	d9 42 28	 fld	 DWORD PTR [edx+40]
+  0029b	d8 48 2c	 fmul	 DWORD PTR [eax+44]
+  0029e	de c1		 faddp	 ST(1), ST(0)
+  002a0	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  002a3	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  002a6	d9 41 2c	 fld	 DWORD PTR [ecx+44]
+  002a9	d8 4a 3c	 fmul	 DWORD PTR [edx+60]
+  002ac	de c1		 faddp	 ST(1), ST(0)
+  002ae	d9 5d ec	 fstp	 DWORD PTR _temp$[ebp+44]
+
+; 176  : 
+; 177  :   temp._41 = a->_41 * b->_11 + a->_42 * b->_21 + a->_43 * b->_31 + a->_44 * b->_41;
+
+  002b1	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  002b4	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  002b7	d9 40 30	 fld	 DWORD PTR [eax+48]
+  002ba	d8 09		 fmul	 DWORD PTR [ecx]
+  002bc	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  002bf	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  002c2	d9 42 34	 fld	 DWORD PTR [edx+52]
+  002c5	d8 48 10	 fmul	 DWORD PTR [eax+16]
+  002c8	de c1		 faddp	 ST(1), ST(0)
+  002ca	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  002cd	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  002d0	d9 41 38	 fld	 DWORD PTR [ecx+56]
+  002d3	d8 4a 20	 fmul	 DWORD PTR [edx+32]
+  002d6	de c1		 faddp	 ST(1), ST(0)
+  002d8	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  002db	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  002de	d9 40 3c	 fld	 DWORD PTR [eax+60]
+  002e1	d8 49 30	 fmul	 DWORD PTR [ecx+48]
+  002e4	de c1		 faddp	 ST(1), ST(0)
+  002e6	d9 5d f0	 fstp	 DWORD PTR _temp$[ebp+48]
+
+; 178  :   temp._42 = a->_41 * b->_12 + a->_42 * b->_22 + a->_43 * b->_32 + a->_44 * b->_42;
+
+  002e9	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  002ec	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  002ef	d9 42 30	 fld	 DWORD PTR [edx+48]
+  002f2	d8 48 04	 fmul	 DWORD PTR [eax+4]
+  002f5	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  002f8	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  002fb	d9 41 34	 fld	 DWORD PTR [ecx+52]
+  002fe	d8 4a 14	 fmul	 DWORD PTR [edx+20]
+  00301	de c1		 faddp	 ST(1), ST(0)
+  00303	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00306	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00309	d9 40 38	 fld	 DWORD PTR [eax+56]
+  0030c	d8 49 24	 fmul	 DWORD PTR [ecx+36]
+  0030f	de c1		 faddp	 ST(1), ST(0)
+  00311	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  00314	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00317	d9 42 3c	 fld	 DWORD PTR [edx+60]
+  0031a	d8 48 34	 fmul	 DWORD PTR [eax+52]
+  0031d	de c1		 faddp	 ST(1), ST(0)
+  0031f	d9 5d f4	 fstp	 DWORD PTR _temp$[ebp+52]
+
+; 179  :   temp._43 = a->_41 * b->_13 + a->_42 * b->_23 + a->_43 * b->_33 + a->_44 * b->_43;
+
+  00322	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00325	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00328	d9 41 30	 fld	 DWORD PTR [ecx+48]
+  0032b	d8 4a 08	 fmul	 DWORD PTR [edx+8]
+  0032e	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00331	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00334	d9 40 34	 fld	 DWORD PTR [eax+52]
+  00337	d8 49 18	 fmul	 DWORD PTR [ecx+24]
+  0033a	de c1		 faddp	 ST(1), ST(0)
+  0033c	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  0033f	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  00342	d9 42 38	 fld	 DWORD PTR [edx+56]
+  00345	d8 48 28	 fmul	 DWORD PTR [eax+40]
+  00348	de c1		 faddp	 ST(1), ST(0)
+  0034a	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  0034d	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  00350	d9 41 3c	 fld	 DWORD PTR [ecx+60]
+  00353	d8 4a 38	 fmul	 DWORD PTR [edx+56]
+  00356	de c1		 faddp	 ST(1), ST(0)
+  00358	d9 5d f8	 fstp	 DWORD PTR _temp$[ebp+56]
+
+; 180  :   temp._44 = a->_41 * b->_14 + a->_42 * b->_24 + a->_43 * b->_34 + a->_44 * b->_44;
+
+  0035b	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0035e	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00361	d9 40 30	 fld	 DWORD PTR [eax+48]
+  00364	d8 49 0c	 fmul	 DWORD PTR [ecx+12]
+  00367	8b 55 08	 mov	 edx, DWORD PTR _a$[ebp]
+  0036a	8b 45 0c	 mov	 eax, DWORD PTR _b$[ebp]
+  0036d	d9 42 34	 fld	 DWORD PTR [edx+52]
+  00370	d8 48 1c	 fmul	 DWORD PTR [eax+28]
+  00373	de c1		 faddp	 ST(1), ST(0)
+  00375	8b 4d 08	 mov	 ecx, DWORD PTR _a$[ebp]
+  00378	8b 55 0c	 mov	 edx, DWORD PTR _b$[ebp]
+  0037b	d9 41 38	 fld	 DWORD PTR [ecx+56]
+  0037e	d8 4a 2c	 fmul	 DWORD PTR [edx+44]
+  00381	de c1		 faddp	 ST(1), ST(0)
+  00383	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  00386	8b 4d 0c	 mov	 ecx, DWORD PTR _b$[ebp]
+  00389	d9 40 3c	 fld	 DWORD PTR [eax+60]
+  0038c	d8 49 3c	 fmul	 DWORD PTR [ecx+60]
+  0038f	de c1		 faddp	 ST(1), ST(0)
+  00391	d9 5d fc	 fstp	 DWORD PTR _temp$[ebp+60]
+
+; 181  : 
+; 182  :   MtxCopy(a,&temp);
+
+  00394	8d 55 c0	 lea	 edx, DWORD PTR _temp$[ebp]
+  00397	52		 push	 edx
+  00398	8b 45 08	 mov	 eax, DWORD PTR _a$[ebp]
+  0039b	50		 push	 eax
+  0039c	e8 00 00 00 00	 call	 ?MtxCopy@@YAXPAUMatrix3D@@0@Z ; MtxCopy
+  003a1	83 c4 08	 add	 esp, 8
+
+; 183  : }
+
+  003a4	5f		 pop	 edi
+  003a5	5e		 pop	 esi
+  003a6	5b		 pop	 ebx
+  003a7	8b e5		 mov	 esp, ebp
+  003a9	5d		 pop	 ebp
+  003aa	c3		 ret	 0
+?MtxMul@@YAXPAUMatrix3D@@0@Z ENDP			; MtxMul
+_TEXT	ENDS
+END

@@ -1,0 +1,496 @@
+     1                                  ; TRIFILLER
+     2                                  
+     3                                  
+     4                                  
+     5                                  ;============
+     6                                  SECTION .bss
+     7                                  ;============
+     8                                  
+     9                                  
+    10                                  struc	gdatas
+    11                                  
+    12 00000000 <res 00000004>          	.minX		resd 1
+    13 00000004 <res 00000004>          	.maxX		resd 1
+    14 00000008 <res 00000004>          	.minY		resd 1
+    15 0000000C <res 00000004>          	.maxY		resd 1
+    16                                  
+    17 00000010 <res 00000004>          	.buffer		resd 1
+    18 00000014 <res 00000004>          	.pitch		resd 1
+    19 00000018 <res 00000004>          	.col		resd 1
+    20                                  
+    21 0000001C <res 00000004>          	.a_x		resd 1
+    22 00000020 <res 00000004>          	.a_y		resd 1
+    23 00000024 <res 00000004>          	.b_x		resd 1
+    24 00000028 <res 00000004>          	.b_y		resd 1
+    25 0000002C <res 00000004>          	.c_x		resd 1
+    26 00000030 <res 00000004>          	.c_y		resd 1
+    27                                  
+    28 00000034 <res 00001000>          	.SLR		resd 1024
+    29                                  	
+    30                                  	.size
+    31                                  endstruc
+    32                                  
+    33                                  
+    34                                  
+    35                                  ;- - - - - - - - - - - - - - - - - - - - - - - 
+    36                                  
+    37                                  global _TriDraw@4		; void	TriDraw(int *triSetting);
+    38                                  global _TriGet@4
+    39                                  
+    40 00000000 <res 00001034>          gdata:	resb gdatas.size
+    41                                  
+    42                                  ;============
+    43                                  SECTION .code
+    44                                  ;============
+    45                                  
+    46                                  %macro	swapP	4
+    47                                  	mov	eax,[ebp + gdatas.%2]
+    48                                  	mov	ebx,[ebp + gdatas.%4]
+    49                                  	cmp	eax,ebx
+    50                                  	jle	short %%sk
+    51                                  	mov	[ebp + gdatas.%2],ebx
+    52                                  	mov	[ebp + gdatas.%4],eax
+    53                                  	mov	eax,[ebp + gdatas.%1]
+    54                                  	mov	ebx,[ebp + gdatas.%3]
+    55                                  	mov	[ebp + gdatas.%1],ebx
+    56                                  	mov	[ebp + gdatas.%3],eax
+    57                                  %%sk:
+    58                                  %endmacro
+    59                                  
+    60                                  
+    61                                  
+    62                                  
+    63                                  %macro	calcInc	5
+    64                                  	push	eax
+    65                                  	push	ecx
+    66                                  	push	edx
+    67                                  	mov	eax,[ebp + gdatas.%5]
+    68                                  	sub	eax,[ebp + gdatas.%3]
+    69                                  	jz	short %%ezero
+    70                                  	mov	ecx,eax
+    71                                  	mov	eax,[ebp + gdatas.%4]
+    72                                  	sub	eax,[ebp + gdatas.%2]
+    73                                  	xor	edx,edx
+    74                                  	shl	eax,16
+    75                                  	cdq
+    76                                  	idiv	ecx
+    77                                  %%ezero:
+    78                                  	mov	%1,eax
+    79                                  	pop	edx
+    80                                  	pop	ecx
+    81                                  	pop	eax
+    82                                  %endmacro
+    83                                  
+    84                                  
+    85                                  ;---------------------------------------------
+    86                                  HLine:
+    87                                  ;---------------------------------------------
+    88 00000000 60                      	pushad
+    89                                  
+    90 00000001 8B1CC6                  	mov	ebx,[esi + eax*8]
+    91 00000004 8B54C604                	mov	edx,[esi + eax*8 + 4]
+    92                                  
+    93 00000008 39D3                    	cmp	ebx,edx
+    94 0000000A 7E06                    	jle	short .noswp
+    95                                  	
+    96 0000000C 89D9                    	mov	ecx,ebx
+    97 0000000E 89D3                    	mov	ebx,edx
+    98 00000010 89CA                    	mov	edx,ecx
+    99                                  .noswp:
+   100                                  
+   101 00000012 3B5D04                  	cmp	ebx,[ebp + gdatas.maxX]		; if ((x1 > maxX) || (x2 < minX)) return;
+   102 00000015 7F56                    	jg	short .exit
+   103 00000017 3B5500                  	cmp	edx,[ebp + gdatas.minX]
+   104 0000001A 7C51                    	jl	short .exit
+   105                                  	
+   106                                  	
+   107 0000001C 8B4D00                  	mov	ecx,[ebp + gdatas.minX]
+   108 0000001F 39CB                    	cmp	ebx,ecx				; if (x1 < minX) x1 = minX;
+   109 00000021 7F02                    	jg	short .naX1
+   110 00000023 89CB                    	mov	ebx,ecx
+   111                                  .naX1:
+   112 00000025 8B4D04                  	mov	ecx,[ebp + gdatas.maxX]
+   113 00000028 39CA                    	cmp	edx,ecx				; if (x2 > maxX) x2 = maxX;
+   114 0000002A 7E02                    	jle	short .naX2
+   115 0000002C 89CA                    	mov	edx,ecx
+   116                                  .naX2:
+   117                                  
+   118 0000002E 89D1                            mov	ecx,edx
+   119 00000030 29D9                            sub	ecx,ebx
+   120 00000032 41                              inc	ecx
+   121 00000033 7E38                            jle	short .exit
+   122                                          
+   123 00000035 8B4518                  	mov	eax,[ebp + gdatas.col]
+   124 00000038 01DF                    	add	edi,ebx				; +X
+   125                                  	
+   126 0000003A 3DFFFFFFFF              	cmp	eax,-1
+   127 0000003F 7413                    	je	.xoring
+   128                                  	
+   129 00000041 51                      	push	ecx
+   130 00000042 C1E902                  	shr	ecx,2
+   131 00000045 FC                      	cld
+   132 00000046 F3AB                    	rep	stosd
+   133 00000048 59                      	pop	ecx
+   134 00000049 81E103000000            	and	ecx,3
+   135 0000004F FC                      	cld
+   136 00000050 F3AA                    	rep	stosb
+   137 00000052 EB19                    	jmp	short .exit
+   138                                  	
+   139                                  .xoring:
+   140 00000054 49                      	dec	ecx
+   141 00000055 7416                    	jz	.exit
+   142                                  .xorng:
+   143 00000057 803F3F                  	cmp	byte [edi],63
+   144 0000005A 7505                    	jne	short .zz
+   145 0000005C C6077F                  	mov	byte [edi],127
+   146 0000005F EB08                    	jmp	short .cz
+   147                                  .zz:	
+   148 00000061 803F7F                  	cmp	byte [edi],127
+   149 00000064 7503                    	jne	short .cz
+   150 00000066 C6073F                  	mov	byte [edi],63
+   151                                  .cz:
+   152 00000069 47                      	inc	edi
+   153 0000006A 49                      	dec	ecx
+   154 0000006B 75EA                    	jnz	short .xorng
+   155                                  
+   156                                  .exit:
+   157 0000006D 61                      	popad
+   158 0000006E C3                      	ret
+   159                                  
+   160                                  
+   161                                  ;---------------------------------------------
+   162                                  sortPoints:
+   163                                  ;---------------------------------------------
+   164 0000006F 60                      	pushad
+   165                                  
+   166                                  	swapP	a_x, a_y, b_x, b_y
+   167 00000070 8B4520              <1> 	mov	eax,[ebp + gdatas.%2]
+   168 00000073 8B5D28              <1> 	mov	ebx,[ebp + gdatas.%4]
+   169 00000076 39D8                <1> 	cmp	eax,ebx
+   170 00000078 7E12                <1> 	jle	short %%sk
+   171 0000007A 895D20              <1> 	mov	[ebp + gdatas.%2],ebx
+   172 0000007D 894528              <1> 	mov	[ebp + gdatas.%4],eax
+   173 00000080 8B451C              <1> 	mov	eax,[ebp + gdatas.%1]
+   174 00000083 8B5D24              <1> 	mov	ebx,[ebp + gdatas.%3]
+   175 00000086 895D1C              <1> 	mov	[ebp + gdatas.%1],ebx
+   176 00000089 894524              <1> 	mov	[ebp + gdatas.%3],eax
+   177                              <1> %%sk:
+   178                                  	swapP	a_x, a_y, c_x, c_y
+   179 0000008C 8B4520              <1> 	mov	eax,[ebp + gdatas.%2]
+   180 0000008F 8B5D30              <1> 	mov	ebx,[ebp + gdatas.%4]
+   181 00000092 39D8                <1> 	cmp	eax,ebx
+   182 00000094 7E12                <1> 	jle	short %%sk
+   183 00000096 895D20              <1> 	mov	[ebp + gdatas.%2],ebx
+   184 00000099 894530              <1> 	mov	[ebp + gdatas.%4],eax
+   185 0000009C 8B451C              <1> 	mov	eax,[ebp + gdatas.%1]
+   186 0000009F 8B5D2C              <1> 	mov	ebx,[ebp + gdatas.%3]
+   187 000000A2 895D1C              <1> 	mov	[ebp + gdatas.%1],ebx
+   188 000000A5 89452C              <1> 	mov	[ebp + gdatas.%3],eax
+   189                              <1> %%sk:
+   190                                  	swapP	b_x, b_y, c_x, c_y
+   191 000000A8 8B4528              <1> 	mov	eax,[ebp + gdatas.%2]
+   192 000000AB 8B5D30              <1> 	mov	ebx,[ebp + gdatas.%4]
+   193 000000AE 39D8                <1> 	cmp	eax,ebx
+   194 000000B0 7E12                <1> 	jle	short %%sk
+   195 000000B2 895D28              <1> 	mov	[ebp + gdatas.%2],ebx
+   196 000000B5 894530              <1> 	mov	[ebp + gdatas.%4],eax
+   197 000000B8 8B4524              <1> 	mov	eax,[ebp + gdatas.%1]
+   198 000000BB 8B5D2C              <1> 	mov	ebx,[ebp + gdatas.%3]
+   199 000000BE 895D24              <1> 	mov	[ebp + gdatas.%1],ebx
+   200 000000C1 89452C              <1> 	mov	[ebp + gdatas.%3],eax
+   201                              <1> %%sk:
+   202                                  
+   203 000000C4 61                      	popad
+   204 000000C5 C3                      	ret
+   205                                  
+   206                                  
+   207                                  
+   208                                  ;---------------------------------------------
+   209                                  ;---------------------------------------------
+   210                                  doTria:
+   211                                  ;---------------------------------------------
+   212                                  ;---------------------------------------------
+   213                                  
+   214                                  	calcInc	esi, a_x, a_y, c_x, c_y		; esi = incEnd
+   215 000000C6 50                  <1> 	push	eax
+   216 000000C7 51                  <1> 	push	ecx
+   217 000000C8 52                  <1> 	push	edx
+   218 000000C9 8B4530              <1> 	mov	eax,[ebp + gdatas.%5]
+   219 000000CC 2B4520              <1> 	sub	eax,[ebp + gdatas.%3]
+   220 000000CF 7410                <1> 	jz	short %%ezero
+   221 000000D1 89C1                <1> 	mov	ecx,eax
+   222 000000D3 8B452C              <1> 	mov	eax,[ebp + gdatas.%4]
+   223 000000D6 2B451C              <1> 	sub	eax,[ebp + gdatas.%2]
+   224 000000D9 31D2                <1> 	xor	edx,edx
+   225 000000DB C1E010              <1> 	shl	eax,16
+   226 000000DE 99                  <1> 	cdq
+   227 000000DF F7F9                <1> 	idiv	ecx
+   228                              <1> %%ezero:
+   229 000000E1 89C6                <1> 	mov	%1,eax
+   230 000000E3 5A                  <1> 	pop	edx
+   231 000000E4 59                  <1> 	pop	ecx
+   232 000000E5 58                  <1> 	pop	eax
+   233                                  	
+   234 000000E6 8B551C                  	mov	edx,[ebp + gdatas.a_x]
+   235 000000E9 C1E210                  	shl	edx,16				; edx = EndX
+   236                                  	
+   237 000000EC 8D7D34                  	lea	edi,[ebp + gdatas.SLR]
+   238                                  
+   239                                  ;--------------
+   240                                  ; CALC UP-TRIA
+   241                                  ;--------------
+   242                                  ;.Tria1:
+   243 000000EF 8B4520                  	mov	eax,[ebp + gdatas.a_y]
+   244 000000F2 3B4528                  	cmp	eax,[ebp + gdatas.b_y]
+   245 000000F5 7D4D                    	jge	short .Tria2
+   246                                  
+   247                                  	calcInc	ebx, a_x, a_y, b_x, b_y		; ebx = incSta
+   248 000000F7 50                  <1> 	push	eax
+   249 000000F8 51                  <1> 	push	ecx
+   250 000000F9 52                  <1> 	push	edx
+   251 000000FA 8B4528              <1> 	mov	eax,[ebp + gdatas.%5]
+   252 000000FD 2B4520              <1> 	sub	eax,[ebp + gdatas.%3]
+   253 00000100 7410                <1> 	jz	short %%ezero
+   254 00000102 89C1                <1> 	mov	ecx,eax
+   255 00000104 8B4524              <1> 	mov	eax,[ebp + gdatas.%4]
+   256 00000107 2B451C              <1> 	sub	eax,[ebp + gdatas.%2]
+   257 0000010A 31D2                <1> 	xor	edx,edx
+   258 0000010C C1E010              <1> 	shl	eax,16
+   259 0000010F 99                  <1> 	cdq
+   260 00000110 F7F9                <1> 	idiv	ecx
+   261                              <1> %%ezero:
+   262 00000112 89C3                <1> 	mov	%1,eax
+   263 00000114 5A                  <1> 	pop	edx
+   264 00000115 59                  <1> 	pop	ecx
+   265 00000116 58                  <1> 	pop	eax
+   266                                  
+   267 00000117 8B4D1C                  	mov	ecx,[ebp + gdatas.a_x]
+   268 0000011A C1E110                  	shl	ecx,16				; ecx = StaX
+   269                                  
+   270                                  .T1_calc:
+   271 0000011D 50                      	push	eax
+   272                                  	
+   273 0000011E 3B4508                  	cmp	eax,[ebp + gdatas.minY]
+   274 00000121 7C16                    	jl	short .T1_inc
+   275 00000123 3B450C                  	cmp	eax,[ebp + gdatas.maxY]
+   276 00000126 7F11                    	jg	short .T1_inc
+   277                                  
+   278 00000128 51                      	push	ecx
+   279 00000129 C1F910                  	sar	ecx,16
+   280 0000012C 890CC7                  	mov	[edi + eax*8],ecx			; SL[i] = StaX >> 16;
+   281 0000012F 59                      	pop	ecx
+   282                                  
+   283 00000130 52                      	push	edx
+   284 00000131 C1FA10                  	sar	edx,16
+   285 00000134 8954C704                	mov	[edi + eax*8 + 4],edx			; SR[i] = EndX >> 16;
+   286 00000138 5A                      	pop	edx
+   287                                  
+   288                                  .T1_inc:
+   289 00000139 01D9                    	add	ecx,ebx
+   290 0000013B 01F2                    	add	edx,esi
+   291                                  
+   292 0000013D 58                      	pop	eax
+   293 0000013E 40                      	inc	eax
+   294 0000013F 3B4528                  	cmp	eax,[ebp + gdatas.b_y]
+   295 00000142 7CD9                    	jl	short .T1_calc
+   296                                  
+   297                                  
+   298                                  ;--------------
+   299                                  ; CALC DN-TRIA
+   300                                  ;--------------
+   301                                  .Tria2:
+   302 00000144 8B4528                  	mov	eax,[ebp + gdatas.b_y]
+   303 00000147 3B4530                  	cmp	eax,[ebp + gdatas.c_y]
+   304 0000014A 7D4D                    	jge	short .drawTria
+   305                                  
+   306                                  	calcInc	ebx, b_x, b_y, c_x, c_y		; ebx = incSta
+   307 0000014C 50                  <1> 	push	eax
+   308 0000014D 51                  <1> 	push	ecx
+   309 0000014E 52                  <1> 	push	edx
+   310 0000014F 8B4530              <1> 	mov	eax,[ebp + gdatas.%5]
+   311 00000152 2B4528              <1> 	sub	eax,[ebp + gdatas.%3]
+   312 00000155 7410                <1> 	jz	short %%ezero
+   313 00000157 89C1                <1> 	mov	ecx,eax
+   314 00000159 8B452C              <1> 	mov	eax,[ebp + gdatas.%4]
+   315 0000015C 2B4524              <1> 	sub	eax,[ebp + gdatas.%2]
+   316 0000015F 31D2                <1> 	xor	edx,edx
+   317 00000161 C1E010              <1> 	shl	eax,16
+   318 00000164 99                  <1> 	cdq
+   319 00000165 F7F9                <1> 	idiv	ecx
+   320                              <1> %%ezero:
+   321 00000167 89C3                <1> 	mov	%1,eax
+   322 00000169 5A                  <1> 	pop	edx
+   323 0000016A 59                  <1> 	pop	ecx
+   324 0000016B 58                  <1> 	pop	eax
+   325                                  
+   326 0000016C 8B4D24                  	mov	ecx,[ebp + gdatas.b_x]
+   327 0000016F C1E110                  	shl	ecx,16				; ecx = StaX
+   328                                  
+   329                                  .T2_calc:
+   330 00000172 50                      	push	eax
+   331                                  	
+   332 00000173 3B4508                  	cmp	eax,[ebp + gdatas.minY]
+   333 00000176 7C16                    	jl	short .T2_inc
+   334 00000178 3B450C                  	cmp	eax,[ebp + gdatas.maxY]
+   335 0000017B 7F11                    	jg	short .T2_inc
+   336                                  
+   337 0000017D 51                      	push	ecx
+   338 0000017E C1F910                  	sar	ecx,16
+   339 00000181 890CC7                  	mov	[edi + eax*8],ecx			; SL[i] = StaX >> 16;
+   340 00000184 59                      	pop	ecx
+   341                                  
+   342 00000185 52                      	push	edx
+   343 00000186 C1FA10                  	sar	edx,16
+   344 00000189 8954C704                	mov	[edi + eax*8 + 4],edx			; SR[i] = EndX >> 16;
+   345 0000018D 5A                      	pop	edx
+   346                                  .T2_inc:
+   347 0000018E 01D9                    	add	ecx,ebx
+   348 00000190 01F2                    	add	edx,esi
+   349                                  
+   350 00000192 58                      	pop	eax
+   351 00000193 40                      	inc	eax
+   352 00000194 3B4530                  	cmp	eax,[ebp + gdatas.c_y]
+   353 00000197 7CD9                    	jl	short .T2_calc
+   354                                  
+   355                                  
+   356                                  ;---------------------------------------------------
+   357                                  .drawTria:
+   358 00000199 89FE                    	mov	esi,edi
+   359 0000019B 8B7D10                  	mov	edi,[ebp + gdatas.buffer]
+   360                                  	
+   361 0000019E 8B4520                  	mov	eax,[ebp + gdatas.a_y]
+   362 000001A1 8B4D08                  	mov	ecx,[ebp + gdatas.minY]
+   363 000001A4 39C8                    	cmp	eax,ecx
+   364 000001A6 7D02                    	jge	short .nAJ
+   365 000001A8 89C8                    	mov	eax,ecx
+   366                                  .nAJ:
+   367                                  
+   368 000001AA 8B5D30                  	mov	ebx,[ebp + gdatas.c_y]
+   369 000001AD 8B4D0C                  	mov	ecx,[ebp + gdatas.maxY]
+   370 000001B0 39CB                    	cmp	ebx,ecx
+   371 000001B2 7E02                    	jle	short .nAJB
+   372 000001B4 89CB                    	mov	ebx,ecx
+   373                                  .nAJB:
+   374                                  
+   375 000001B6 8B5514                  	mov	edx,[ebp + gdatas.pitch]
+   376                                  
+   377 000001B9 50                      	push	eax
+   378 000001BA 52                      	push	edx
+   379 000001BB 89D1                    	mov	ecx,edx
+   380 000001BD 31D2                    	xor	edx,edx
+   381 000001BF F7E1                    	mul	ecx
+   382 000001C1 01C7                    	add	edi,eax
+   383 000001C3 5A                      	pop	edx
+   384 000001C4 58                      	pop	eax
+   385                                  
+   386                                  	
+   387                                  .nextRow:
+   388 000001C5 E836FEFFFF              	call	HLine
+   389                                  	
+   390 000001CA 01D7                    	add	edi,edx
+   391                                  	
+   392 000001CC 40                      	inc	eax
+   393 000001CD 39D8                    	cmp	eax,ebx
+   394 000001CF 7CF4                    	jl	short .nextRow
+   395                                  .exit:
+   396 000001D1 C3                      	ret
+   397                                  
+   398                                  
+   399                                  
+   400                                  
+   401                                  
+   402                                  
+   403                                  
+   404                                  
+   405                                  
+   406                                  
+   407                                  
+   408                                  ;---------------------------------------------
+   409                                  _TriGet@4:
+   410                                  ;---------------------------------------------
+   411 000001D2 55                      	push	ebp
+   412 000001D3 89E5                    	mov	ebp,esp
+   413 000001D5 60                      	pushad
+   414                                  
+   415 000001D6 8D35[00000000]          	lea	esi,[gdata]
+   416 000001DC 8B7D08                  	mov	edi,[ebp + 8]
+   417 000001DF B90D040000              	mov	ecx,4+3+6+1024
+   418 000001E4 FC                      	cld
+   419 000001E5 F3A5                    	rep	movsd
+   420                                  
+   421 000001E7 61                      	popad
+   422 000001E8 5D                      	pop	ebp
+   423 000001E9 31C0                    	xor	eax,eax
+   424 000001EB C20400                  	ret     4h
+   425                                  
+   426                                  
+   427                                  ;---------------------------------------------
+   428                                  _TriDraw@4:
+   429                                  ;---------------------------------------------
+   430 000001EE 55                      	push	ebp
+   431 000001EF 89E5                    	mov	ebp,esp
+   432 000001F1 60                      	pushad
+   433                                  
+   434 000001F2 8B7508                  	mov	esi, [ebp + 8]
+   435 000001F5 8D2D[00000000]          	lea	ebp, [gdata]
+   436                                  
+   437 000001FB 8B06                    	mov	eax,[esi]
+   438 000001FD 894500                  	mov	[ebp + gdatas.minX],eax
+   439 00000200 8B4604                  	mov	eax,[esi + 4]
+   440 00000203 894504                  	mov	[ebp + gdatas.maxX],eax
+   441 00000206 8B4608                  	mov	eax,[esi + 8]
+   442 00000209 894508                  	mov	[ebp + gdatas.minY],eax
+   443 0000020C 8B460C                  	mov	eax,[esi + 12]
+   444 0000020F 89450C                  	mov	[ebp + gdatas.maxY],eax
+   445                                  	
+   446 00000212 8B4610                  	mov	eax,[esi + 16]
+   447 00000215 894510                  	mov	[ebp + gdatas.buffer],eax
+   448 00000218 8B4614                  	mov	eax,[esi + 20]
+   449 0000021B 894514                  	mov	[ebp + gdatas.pitch],eax
+   450                                  	
+   451 0000021E 8B4618                  	mov	eax,[esi + 24]
+   452 00000221 3DFFFFFFFF              	cmp	eax,-1
+   453 00000226 7409                    	je	.nosetcol
+   454 00000228 88C4                    	mov	ah,al
+   455 0000022A 6650                    	push	ax
+   456 0000022C C1E010                  	shl	eax,16
+   457 0000022F 6658                    	pop	ax
+   458                                  .nosetcol:
+   459 00000231 894518                  	mov	[ebp + gdatas.col],eax
+   460                                  
+   461 00000234 8B461C                  	mov	eax,[esi + 28]
+   462 00000237 89451C                  	mov	[ebp + gdatas.a_x],eax
+   463 0000023A 8B4620                  	mov	eax,[esi + 32]
+   464 0000023D 894520                  	mov	[ebp + gdatas.a_y],eax
+   465 00000240 8B4624                  	mov	eax,[esi + 36]
+   466 00000243 894524                  	mov	[ebp + gdatas.b_x],eax
+   467 00000246 8B4628                  	mov	eax,[esi + 40]
+   468 00000249 894528                  	mov	[ebp + gdatas.b_y],eax
+   469 0000024C 8B462C                  	mov	eax,[esi + 44]
+   470 0000024F 89452C                  	mov	[ebp + gdatas.c_x],eax
+   471 00000252 8B4630                  	mov	eax,[esi + 48]
+   472 00000255 894530                  	mov	[ebp + gdatas.c_y],eax
+   473                                  	
+   474                                  ;-------
+   475                                  
+   476 00000258 E812FEFFFF              	call	sortPoints
+   477                                  	
+   478 0000025D 8B4520                  	mov	eax,[ebp + gdatas.a_y]
+   479 00000260 3B450C                  	cmp	eax,[ebp + gdatas.maxY]
+   480 00000263 7F0D                    	jg	short .end
+   481                                  	
+   482 00000265 8B4530                  	mov	eax,[ebp + gdatas.c_y]
+   483 00000268 3B4508                  	cmp	eax,[ebp + gdatas.minY]
+   484 0000026B 7C05                    	jl	short .end
+   485                                  
+   486 0000026D E854FEFFFF              	call	doTria
+   487                                  
+   488                                  .end:
+   489 00000272 61                      	popad
+   490 00000273 5D                      	pop	ebp
+   491 00000274 31C0                    	xor	eax,eax
+   492 00000276 C20400                  	ret     4h
+   493                                  
+   494                                  
+   495                                  
+   496                                  

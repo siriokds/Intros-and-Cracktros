@@ -1,0 +1,97 @@
+
+struct	scrInfo 
+{
+	char 	*scrFont;
+	int	scrFontRow;
+	char 	*scrDest;
+	int	scrDestRow;
+
+	char 	*scrText;
+	char 	*scrFontMtx;
+	int	scrFontW, scrFontH;
+	int	TextPos, Wait;
+	int	cX, cY;
+	int	col, row;
+	int	stop;
+};
+
+
+/*------------------------------------------------------------------------*/
+void	scrInit(struct scrInfo * scroll)
+/*------------------------------------------------------------------------*/
+{
+	scroll->TextPos = 0;
+	scroll->ScrlPos = 0;
+	scroll->Wait = 0;
+	scroll->cX = 0;
+	scroll->cY = 0;
+	scroll->stop = 0;
+
+}
+
+/*------------------------------------------------------------------------*/
+int	scrCR(struct scrInfo * scroll)
+/*------------------------------------------------------------------------*/
+{
+	scroll->cX = 0;
+	scroll->cY++;
+}
+
+/*------------------------------------------------------------------------*/
+int	scrWriteNext(struct scrInfo * scroll)
+/*------------------------------------------------------------------------*/
+{
+int	i, rowsize;
+char	c, *p, *src, *dst;
+
+	src = scroll->scrFont;
+	dst = scroll->scrDest + 
+		(scroll->cY * scroll->scrFontH * scroll->scrDestRow) + 
+		(scroll->cX * scroll->scrFontW);
+	
+// GETCHAR
+
+getchr:
+
+	c = scroll->scrText[scroll->TextPos++];
+
+	if (c == 'é') { scroll->TextPos = 0; goto getchr; }
+	if (c == 's') { scroll->stop = 1; return 0; }
+	if (c == 'w') { scroll->Wait = (60*3); return 0; }
+	if (c == 'c') { scrCR(scroll); goto getchr; }
+	
+// SEARCH
+
+	for (i = 0, p = scroll->scrFontMtx; *p != 'é'; i++, p++) if (*p == c) break;
+
+
+// CALCPOS
+
+	rowsize = scroll->scrFontRow * scroll->scrFontH;
+	
+	src += (i / scroll->scrFontW) * rowsize;
+	src += (i & (scroll->scrFontW-1)) * scroll->scrFontW;
+
+
+// COPY
+	for (i = 0; i < scroll->scrFontH; i++)
+	{
+		copyROW8( src + (scroll->scrFontRow * i),
+				   dst + (scroll->scrDestRow * i));
+	}
+	
+	
+	if (++scroll->cX = scroll->col) scrCR(scroll);
+
+	return 1;
+}
+
+/*------------------------------------------------------------------------*/
+void	scrExecute(struct scrInfo * scroll)
+/*------------------------------------------------------------------------*/
+{
+	if (scroll->stop) return;
+	
+	if (scroll->Wait) { scroll->Wait--; return; }
+	scrWriteNext(scroll);
+}
