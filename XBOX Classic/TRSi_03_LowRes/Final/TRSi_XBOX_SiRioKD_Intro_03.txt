@@ -1,0 +1,21 @@
+Page Texter
+-----------
+
+Addresses: 0x35908=Page1, 0x35AA0=Page2,  0x35C38=Page3,
+
+Every page is 40x8 uppercase chars.
+matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890()+,!'@/><:.-"
+ 
+* Special chars:
+'q' long wait
+'w' short wait
+
+
+ScrollText
+----------
+
+Address:	0x35DB8-0x35EC0	
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890()+,!'@/><:.-"
+
+* Special chars:
+'w' restart

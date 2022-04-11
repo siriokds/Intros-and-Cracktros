@@ -1,0 +1,43 @@
+-------------------------
+ ***  SiRioKD / TRSi ***
+         presents
+  
+ > ProjectX Trainer #1 <
+-------------------------
+
+
+Trainer
+-------
+
+Addresses: 
+
+Trained Game Name at:    $2C050    (max 48 chars)
+Number of Options is at: $2C094    (max 32 options) 
+Option Texts starts at:  $2C098 
+Option Text Length:      32 chars  (2nd option is at: $2C0B8...)
+
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,'^+-?!()></";
+
+
+- Game starts with "START GAME" option OR <START> joypad key.
+- Trainer data file (size = number of Options at $2C094) is saved to "E:\TDATA\pjx" file.
+- Trainer reboot and try to execute "D:\pjx" game executable.
+- Rename trainer file to "default.xbe" and game file to "pjx".
+
+
+ScrollText
+----------
+
+Address:	$3E1B0	(max 512 CHARS, endtext with 'r' char)
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890:*?!()+-,./#"
+* Special chars: 'r' (lowercase) => restart
+
+
+Credits
+-------
+
+6 rows (40 chars each) at:   $2C49C, $2C4C8, $2C4F4, $2C520, $2C54C, $2C578, 
+
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,'^+-?!()></";
+
+
