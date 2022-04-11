@@ -1,0 +1,536 @@
+//Main header file for the XDK
+
+#include <xtl.h>
+#include <XBApp.h>
+#include <XBFont.h>
+#include <XBInput.h>
+#include <XBUtil.h>
+
+
+
+#include "Scale2x.h"
+
+#include "Main.h"
+#include "roms.h"
+
+
+float		fps  = 0;
+float		lastfps[8];
+float		last;
+
+
+int			resX, resY;
+
+int			stretchX = 1;
+int			stretchY = 0;
+int			scale2x = 0;
+
+
+
+int			isPAL50 = 0, isWide = 0;
+int			EMUpaused = 0;
+int			m_resolution;
+
+#define		MSGWAIT	100
+int			sysMSGcnt = MSGWAIT;
+
+int			LINES_PER_FRAME = 313;
+int			FRAMES_PER_SECOND = 50;
+int			CYCLES_PER_LINE = ((MAIN_CLOCK/FRAMES_PER_SECOND)/LINES_PER_FRAME);
+int			SOUND_BLOCK_ROWS = 8;
+int			SOUND_BLOCK_SMPS, SAMPLE_RATE_V;
+
+CXBFont     m_Font;
+int			font;
+
+
+cRomList		romMan;
+cMenuScroll     menuMan;
+
+t_vdp	vdp;
+t_psg	psg;
+t_kbd	kbd;
+
+
+UBYTE	TEMP[524800];
+UBYTE	ROM[524288];
+UBYTE	SRAM[32768];
+UBYTE	BRAM[8192];
+int		BANK_REGS[4];
+UBYTE	port_3F;
+int		country = TYPE_OTHER;
+
+
+#include "MenuSys.h"
+
+#include "Emu.h"
+
+
+extern	int	loadret;
+
+
+/*----------------------------------------------------------------*/
+class CXBoxSample : public CXBApplication
+/*----------------------------------------------------------------*/
+{
+public:
+
+	char	m_resMsg[128];
+
+	LPDIRECT3DTEXTURE8      m_pVideoTexture;
+	LPDIRECT3DVERTEXBUFFER8 m_pVB;
+
+		    CXBoxSample();
+    HRESULT Initialize();       // Initialize the sample
+    HRESULT Render();           // Render the scene
+    HRESULT FrameMove();        // Perform per-frame updates
+	void	ChangeResolution(void);
+
+	void	WriteAF(void);
+
+};
+CXBoxSample xbApp;
+
+
+//-----------------------------------------------------------------------------
+// Name: main()
+// Desc: Entry point to the program.
+//-----------------------------------------------------------------------------
+VOID __cdecl main()
+{
+    if( FAILED( xbApp.Create() ) ) return;
+    xbApp.Run();
+}
+
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void	NextResolution(void)
+{
+	m_resolution = (m_resolution + 1) % 4;
+	xbApp.ChangeResolution();
+	sysMSGcnt = MSGWAIT;
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CXBoxSample::ChangeResolution(void) 
+{
+int	interpolated = 0;
+
+
+	switch(m_resolution) 
+	{
+		case 0:
+			stretchX = 1;
+			stretchY = 0;
+			scale2x = 1;
+			interpolated = 1;
+			sprintf( m_resMsg, "%dx%d %dHz - Scale2x Linear Interpolated",704, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+			break;
+
+		case 1:
+			stretchX = 1;
+			stretchY = 0;
+			scale2x = 0;
+			interpolated = 1;
+			sprintf( m_resMsg, "%dx%d %dHz - 2x Linear Interpolated",704, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+			break;
+
+		case 2:
+			stretchX = 0;
+			stretchY = 0;
+			scale2x = 1;
+			interpolated = 0;
+			sprintf( m_resMsg, "%dx%d %dHz - Scale2x No Interpolation",640, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+			break;
+
+		case 3:
+			stretchX = 0;
+			stretchY = 0;
+			scale2x = 0;
+			interpolated = 0;
+			sprintf( m_resMsg, "%dx%d %dHz - No Interpolation",640, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+			break;
+
+/*
+		case 0:
+			stretchX = 1;
+			stretchY = 0;
+			interpolated = 0;
+			sprintf( m_resMsg, "%dx%d %dHz - No Interpolation",704, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+		    break;
+*/
+	}
+
+	if (interpolated)	m_d3dpp.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_HORIZONTAL_LINEAR;
+	else				m_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE,
+	m_pd3dDevice->Reset( &m_d3dpp );
+
+
+	resY = ((isPAL50==0)||(stretchY==1)) ? 480 : 576;
+
+	m_d3dpp.BackBufferWidth = resX = 640;
+	m_d3dpp.BackBufferHeight = resY;
+
+	m_d3dpp.BackBufferFormat       = D3DFMT_R5G6B5;
+	m_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	m_d3dpp.BackBufferCount        = 1;
+	m_d3dpp.EnableAutoDepthStencil = TRUE;
+	m_d3dpp.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	m_d3dpp.SwapEffect             = D3DSWAPEFFECT_DISCARD;
+
+
+	m_pd3dDevice->Reset( &m_d3dpp );
+}
+
+
+//-----------------------------------------------------------------------------
+// Name: CXBoxSample (constructor)
+// Desc: Constructor for CXBoxSample class
+//-----------------------------------------------------------------------------
+CXBoxSample::CXBoxSample() 
+            :CXBApplication()
+{
+	// IF NOT PAL > 60Hz
+	// ELSE
+	//		IF WIDESCREEN > 60Hz
+	//		ELSE			50Hz
+
+/*
+	isPAL50 = 1;
+	isWide = 0; 
+
+	if (XGetVideoStandard() != XC_VIDEO_STANDARD_PAL_I) isPAL50 = 0;
+*/
+/*
+	else
+	{
+		DWORD videoFlags = XGetVideoFlags();
+		if ((videoFlags & XC_VIDEO_FLAGS_WIDESCREEN)
+			&& (videoFlags & XC_VIDEO_FLAGS_PAL_60Hz)) 
+		{
+			isWide = 1; 
+			isPAL50 = 0; 
+		}
+	}
+*/
+	isPAL50 = 0;
+
+	if (XGetVideoStandard() == XC_VIDEO_STANDARD_PAL_I)
+	{
+		DWORD videoFlags = XGetVideoFlags();
+		if ((videoFlags & XC_VIDEO_FLAGS_PAL_60Hz) == 0) isPAL50 = 1;
+	}
+
+
+	if (isPAL50)
+	{
+		FRAMES_PER_SECOND = 50;
+		LINES_PER_FRAME = 313;
+	}
+	else
+	{
+		FRAMES_PER_SECOND = 60;
+		LINES_PER_FRAME = 288;
+	}
+
+
+	SAMPLE_RATE_V = SAMPLE_RATE / FRAMES_PER_SECOND;
+	SOUND_BLOCK_SMPS = (SAMPLE_RATE_V*SOUND_BLOCK_ROWS)/LINES_PER_FRAME;
+	CYCLES_PER_LINE = ((MAIN_CLOCK/FRAMES_PER_SECOND)/LINES_PER_FRAME);
+
+	m_resolution = 2;
+	
+	m_d3dpp.FullScreen_RefreshRateInHz = FRAMES_PER_SECOND;
+	m_d3dpp.BackBufferWidth = resX = 640;
+
+	resY = ((isPAL50==0)||(stretchY==1)) ? 480 : 576;
+	m_d3dpp.BackBufferHeight = resY;
+
+//	m_d3dpp.Flags |= ((isWide) ? D3DPRESENTFLAG_WIDESCREEN : 0);
+
+	m_d3dpp.BackBufferFormat       = D3DFMT_R5G6B5;
+	m_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	m_d3dpp.BackBufferCount        = 1;
+	m_d3dpp.EnableAutoDepthStencil = TRUE;
+	m_d3dpp.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	m_d3dpp.SwapEffect             = D3DSWAPEFFECT_DISCARD;
+
+//	m_d3dpp.MultiSampleType = D3DMULTISAMPLE_4_SAMPLES_MULTISAMPLE_GAUSSIAN;
+//	m_d3dpp.MultiSampleType = D3DMULTISAMPLE_9_SAMPLES_SUPERSAMPLE_GAUSSIAN;
+
+
+	stretchX = 1;
+	stretchY = 0;
+	scale2x = 1;
+	m_d3dpp.MultiSampleType = D3DMULTISAMPLE_2_SAMPLES_SUPERSAMPLE_HORIZONTAL_LINEAR;
+	sprintf( m_resMsg, "%dx%d %dHz - Scale2x Linear Interpolated",704, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+
+//	sprintf( m_resMsg, "%dx%d %dHz - No Interpolation",704, m_d3dpp.BackBufferHeight, m_d3dpp.FullScreen_RefreshRateInHz );
+	sysMSGcnt = MSGWAIT*2;
+}
+
+//-----------------------------------------------------------------------------
+void	WriteString(int x, int y, char *str, int sel, int just)
+//-----------------------------------------------------------------------------
+{
+WCHAR   m_val[80];
+DWORD	cols[] = { 0xFF999999, 0xFFFFFFAA, 0xFFAAFFAA, 0xFFAAAAFF };
+
+	if (font)
+	{
+		m_Font.Begin();
+
+		swprintf( m_val, L"");
+		swprintf( m_val, L"%S\n", str );
+
+		DWORD color = cols[sel&3];
+
+		m_Font.DrawText( float(x+2), float(y+4), 0xFF0F0F0F, m_val, just);
+		m_Font.DrawText( float(x  ), float(y  ),      color, m_val, just);
+
+		m_Font.End();
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+void	WriteInteger(int x, int y, int val, int sel, int just)
+//-----------------------------------------------------------------------------
+{
+WCHAR   m_val[80];
+DWORD	cols[] = { 0xFF999999, 0xFFFFFFAA, 0xFFAAFFAA, 0xFFAAAAFF };
+
+	if (font)
+	{
+		m_Font.Begin();
+
+		swprintf( m_val, L"");
+		swprintf( m_val, L"%d\n", val );
+
+		DWORD color = cols[sel&3];
+
+		m_Font.DrawText( float(x+2), float(y+4), 0xFF0F0F0F, m_val, just);
+		m_Font.DrawText( float(x  ), float(y  ),      color, m_val, just);
+
+		m_Font.End();
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+void	CXBoxSample::WriteAF(void)
+//-----------------------------------------------------------------------------
+{
+	if (font)
+	{
+        for (int i = 0; i < 11; i++)
+        {
+                int val = menuMan.valid(i);
+                if (val)
+                {
+                        WriteString(64,64+(i*32),romMan.m_pList[menuMan.m_window+i].szName, val==2, 0);
+                }
+        }
+	}
+
+}
+
+
+
+
+ 
+//-----------------------------------------------------------------------------
+HRESULT CXBoxSample::Initialize()
+//-----------------------------------------------------------------------------
+{
+CHAR g_strRomPath[] = "D:\\Roms";
+
+	font = 1;
+
+    if( FAILED( m_Font.Create(m_pd3dDevice,"Font.xpr" ) ) ) font = 0;
+
+
+	romMan.GetList(g_strRomPath);
+	menuMan.init(romMan.m_nListCount, 11);
+
+
+//-------------------------------------------------------------------
+
+	m_pd3dDevice->CreateTexture( 320*2, 288*2, 1, 0, D3DFMT_LIN_R5G6B5, D3DPOOL_MANAGED, &m_pVideoTexture);
+    m_pd3dDevice->CreateVertexBuffer( 4*(6*sizeof(FLOAT) + sizeof(DWORD)), D3DUSAGE_WRITEONLY, 0L, D3DPOOL_DEFAULT, &m_pVB );
+
+
+	SC3000_Init();
+
+	last = (float)GetTickCount();
+
+    return S_OK;
+}
+
+
+//-----------------------------------------------------------------------------
+HRESULT CXBoxSample::FrameMove()
+//-----------------------------------------------------------------------------
+{ 
+    return S_OK;
+}
+
+
+
+
+//------------------------------------------------------------------------------
+HRESULT CXBoxSample::Render()
+//------------------------------------------------------------------------------
+{
+	m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0,  0, 0), 1.0f, 0);
+
+//------------------------------------------------------------------------------
+	fps  = (float)(1.0f/(((float)GetTickCount() - last) / 1000.0f));
+    last = (float)GetTickCount();
+
+
+	SC3000_Frame();
+
+//------------------------------------------------------------------------------
+
+
+D3DLOCKED_RECT d3dlr;
+
+	m_pVideoTexture->LockRect(0,&d3dlr,0,0);
+
+	SWORD	*src = VOS_GetFramePtr();
+	SWORD	*dst = (SWORD*)d3dlr.pBits;
+	int		pitch = d3dlr.Pitch;
+
+	if (dst) 
+	{
+
+		if (scale2x) AdMame2x((u8*)src, 640, (u8*)dst, (u32)pitch, 320, 288);
+		else
+		{
+			for (int y = 0; y < 288; y++)
+			{
+				memcpy(dst, src, 320*sizeof(SWORD));
+				dst += pitch>>1;
+				src += 320;
+			}
+		}
+
+	}
+
+
+	m_pVideoTexture->UnlockRect(0);
+
+
+//------------------------------------------------------------------------------
+
+	// Set state to render the gamepad image
+	m_pd3dDevice->SetTexture( 0, m_pVideoTexture );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+	m_pd3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
+	m_pd3dDevice->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESSU,  D3DTADDRESS_CLAMP );
+	m_pd3dDevice->SetTextureStageState( 0, D3DTSS_ADDRESSV,  D3DTADDRESS_CLAMP );
+	m_pd3dDevice->SetRenderState( D3DRS_ZENABLE,      FALSE );
+	m_pd3dDevice->SetRenderState( D3DRS_FOGENABLE,    FALSE );
+	m_pd3dDevice->SetRenderState( D3DRS_FOGTABLEMODE, D3DFOG_NONE );
+	m_pd3dDevice->SetRenderState( D3DRS_FILLMODE,     D3DFILL_SOLID );
+	m_pd3dDevice->SetRenderState( D3DRS_CULLMODE,     D3DCULL_CCW );
+	m_pd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+	m_pd3dDevice->SetRenderState( D3DRS_SRCBLEND,  D3DBLEND_SRCALPHA );
+	m_pd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+	m_pd3dDevice->SetVertexShader( D3DFVF_XYZRHW|D3DFVF_TEX1|D3DFVF_DIFFUSE  );
+
+	struct VERTEX { D3DXVECTOR4 p; D3DCOLOR vbColor; FLOAT tu, tv; };
+    VERTEX* v;
+
+	float sizeX = (stretchX) ? ((vdp.reg[0]&0x20)?728.0f:712.0f) : 640.0f;
+	float offsX = float((resX-sizeX)*0.5f);
+
+	float sizeY = 576.0f; //(stretchY) ? 672.0f : 576.0f;  
+	float offsY = (resY==576) ? 0 : -48.0f;
+
+	DWORD mColor = (EMUpaused==0)?0xFFFFFFFF:0xFF3F3F3F;
+
+	float tSizeX = (scale2x) ? (640.0f - 0.5f) : (320.0f - 0.5f);
+	float tSizeY = (scale2x) ? (576.0f - 0.5f) : (288.0f - 0.5f);
+
+
+    m_pVB->Lock( 0, 0, (BYTE**)&v, 0L );
+    v[0].p = D3DXVECTOR4(offsX+    0,offsY+    0, 0, 0 );  v[0].vbColor = mColor; v[0].tu =      0;  v[0].tv =      0;
+    v[1].p = D3DXVECTOR4(offsX+sizeX,offsY+    0, 0, 0 );  v[1].vbColor = mColor; v[1].tu = tSizeX;  v[1].tv =      0;
+    v[2].p = D3DXVECTOR4(offsX+sizeX,offsY+sizeY, 0, 0 );  v[2].vbColor = mColor; v[2].tu = tSizeX;  v[2].tv = tSizeY;
+    v[3].p = D3DXVECTOR4(offsX+    0,offsY+sizeY, 0, 0 );  v[3].vbColor = mColor; v[3].tu =      0;  v[3].tv = tSizeY;
+    m_pVB->Unlock();
+
+	m_pd3dDevice->SetStreamSource( 0, m_pVB, 6*sizeof(FLOAT) + sizeof(DWORD) );
+	m_pd3dDevice->DrawPrimitive( D3DPT_QUADLIST, 0, 1 );
+
+//-----------------------------------
+
+	
+//	SC3000_SysMsgDraw(resX,330); if (m_SysMsgWait > 0) m_SysMsgWait--;
+
+	SC3000_SysMsgDraw(resX,200); if (m_SysMsgWait > 0) m_SysMsgWait--;
+
+//-----------------------------------
+
+
+	if (sysMSGcnt>0)
+	{
+		sysMSGcnt--;
+		WriteString(resX>>1, resY-52, m_resMsg, 0, XBFONT_CENTER_X);
+	}
+
+	
+//-----------------------------------
+//	WriteInteger(32, resY-56, loadret, 3, 0);
+
+/*
+	char temp[128];
+	sprintf(temp,"PC:%04X - AF:%04X - VD:%04X - NA:%04X"
+			,z80_get_reg(Z80_REG_PC)
+			,z80_get_reg(Z80_REG_AF)
+			,vdp.addr
+			,port_3F
+			);
+
+	WriteString(48, 48, temp, 0, 0);
+
+	sprintf(temp,"BANKS: %02X - %02X - %02X - %02X"
+			,BANK_REGS[0]
+			,BANK_REGS[1]
+			,BANK_REGS[2]
+			,BANK_REGS[3]
+			);
+
+	WriteString(48, 48+28, temp, 0, 0);
+
+	sprintf(temp,"%d",loadret);
+	WriteString(500, 48+(0*28), temp, 0, 0);
+
+*/
+
+//-----------------------------------
+	SC3000_MenuDraw(96,(resY-(30*11))>>1, resX, resY); if (m_MenuRowWait > 0) m_MenuRowWait--;
+
+	m_pd3dDevice->Present(NULL, NULL, NULL, NULL);
+	return S_OK;
+}
+
+
+

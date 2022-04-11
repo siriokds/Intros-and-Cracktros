@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" standalone="no"?>
+<document>
+	<titles>
+	
+		<Item>
+		
+			<title>Titolo1</title>
+    	<path>Z01_TITOLO1</path>	
+			<sshot>titolo1.png</sshot>
+			
+		</Item>
+		
+		<Item>
+		
+			<title>Titolo2</title>
+    	<path>Z02_TITOLO2</path>	
+			<sshot>titolo2.png</sshot>
+			
+		</Item>
+		
+	</titles>
+</document>

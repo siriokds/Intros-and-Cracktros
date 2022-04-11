@@ -1,0 +1,149 @@
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" content="text/html; charset=Windows-1252">
+</head>
+<body>
+<pre>
+<table width=100% bgcolor=#CFCFE5><tr> <td> <font face=arial size=+3>
+Build Log
+</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>
+<h3>------- Build started: Project: LoaderGfx, Configuration: Release|Xbox -------
+</h3>
+</pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
+Command Lines
+</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>Creating temporary file "d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000001.rsp" with contents
+[
+/Ox /Oy /D "NDEBUG" /D "_XBOX" /D "_MBCS" /GF /FD /EHsc /MT /GS /Gy /arch:SSE /Fp"Release/LoaderGfx.pch" /Fo"Release/" /Fd"Release/vc70.pdb" /W3 /c /Zi /TP
+.\xbutil.cpp
+.\xbresource.cpp
+.\xbinput.cpp
+.\xbfont.cpp
+.\xbapp.cpp
+.\stdafx.cpp
+.\mp3player.cpp
+.\mp3.cpp
+.\Main.cpp
+.\KStars.cpp
+.\DOut.cpp
+.\CIniReader.cpp
+.\cGif.cpp
+]
+Creating command line "cl.exe @d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000001.rsp /nologo"
+Creating temporary file "d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000002.rsp" with contents
+[
+/OUT:"Release/LoaderGfx.exe" /INCREMENTAL:NO /NOLOGO /DEBUG /PDB:"Release/LoaderGfx.pdb" /MAP /OPT:REF /OPT:ICF /RELEASE /subsystem:xbox /MACHINE:I386 xapilib.lib d3d8.lib d3dx8.lib xgraphics.lib dsound.lib dmusic.lib xacteng.lib xsndtrk.lib xvoice.lib xonlines.lib xboxkrnl.lib
+.\Release\cGif.obj
+.\Release\CIniReader.obj
+.\Release\DOut.obj
+.\Release\KStars.obj
+.\Release\Main.obj
+.\Release\mp3.obj
+.\Release\mp3player.obj
+.\Release\stdafx.obj
+.\Release\xbapp.obj
+.\Release\xbfont.obj
+.\Release\xbinput.obj
+.\Release\xbresource.obj
+.\Release\xbutil.obj
+]
+Creating command line "link.exe @d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000002.rsp"
+Creating temporary file "d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000003.rsp" with contents
+[
+/OUT:"d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\default.xbe" /stack:"65536" .\Release\LoaderGfx.exe
+]
+Creating command line "imagebld.exe @d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000003.rsp /nologo"
+Creating temporary file "d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000004.rsp" with contents
+[
+"d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\default.xbe" "xe:\LoaderGfx\LoaderGfx.xbe"
+]
+Creating command line "xbecopy.exe @d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\RSP000004.rsp /nologo"
+</pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
+Output Window
+</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>Compiling...
+xbutil.cpp
+xbresource.cpp
+xbinput.cpp
+xbfont.cpp
+xbapp.cpp
+stdafx.cpp
+mp3player.cpp
+mp3.cpp
+mp3.cpp(540) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(548) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(558) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(963) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(966) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(972) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(973) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(978) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(979) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(983) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(984) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(985) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(987) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(991) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(994) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(996) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(998) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(999) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1002) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1003) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1004) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1005) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1006) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1007) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1012) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1014) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1028) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1029) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1030) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1031) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1042) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1043) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1044) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(1045) : warning C4244: '=' : conversion from 'double' to 'real', possible loss of data
+mp3.cpp(3209) : warning C4244: '=' : conversion from 'long' to 'short', possible loss of data
+mp3.cpp(3222) : warning C4244: '=' : conversion from 'long' to 'short', possible loss of data
+mp3.cpp(3247) : warning C4244: '=' : conversion from 'long' to 'short', possible loss of data
+mp3.cpp(3287) : warning C4018: '<' : signed/unsigned mismatch
+mp3.cpp(3293) : warning C4018: '<' : signed/unsigned mismatch
+mp3.cpp(3393) : warning C4018: '<' : signed/unsigned mismatch
+mp3.cpp(3399) : warning C4018: '<' : signed/unsigned mismatch
+Main.cpp
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(105) : warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(135) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(135) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(146) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(146) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(159) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(159) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(166) : warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(173) : warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(173) : warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(177) : warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+d:\Progetti\XBOX\XDK\Loader2_MenuX\TrainerStuffs.h(177) : warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+Main.cpp(782) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(782) : warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(825) : warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+Main.cpp(826) : warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+Main.cpp(832) : warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(833) : warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(834) : warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(835) : warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+Main.cpp(845) : warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+Main.cpp(845) : warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+KStars.cpp
+DOut.cpp
+CIniReader.cpp
+cGif.cpp
+Generating Code...
+Linking...
+Creating Xbox Image...
+Copying files to the Xbox...
+xbecopy: error X1001: Could not connect to Xbox ''
+</pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
+Results
+</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>
+Build log was saved at "file://d:\Progetti\Xbox\Xdk\Loader2_MenuX\Release\BuildLog.htm"
+LoaderGfx - 1 error(s), 63 warning(s)</pre></table><table   width=100% height=20 bgcolor=#CFCFE5><tr><td><font face=arial size=+2>
+</font></table></body></html>

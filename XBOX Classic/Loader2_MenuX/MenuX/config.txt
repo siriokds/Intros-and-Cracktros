@@ -1,0 +1,28 @@
+SCREENSHOTS_POS=334,96
+SCREENSHOTS_SIZE=260,260
+SCREENSHOTS_ALPHA=200
+
+TITLES_POS=66,104
+TITLES_ROWSIZE=230,54
+TITLES_ROWS=4
+
+TITLE=Grabbed by the Ghoulies
+INFO=Rare
+GFX=grabbed_by_the_ghoulies.png
+DIR=Z04_GRABBED_BY_THE_GHOULIES
+
+TITLE=SNK vs CAPCOM SVC Chaos
+INFO=SNK Playmore
+GFX=snk_vs_capcom_chaos.png
+DIR=Z03_SNK_VS_CAPCOM_CHAOS
+
+TITLE=Guilty Gear Isuka
+INFO=Sammy
+GFX=guilty_gear_isuka.png
+DIR=Z02_GUILTY_GEAR_ISUKA
+
+TITLE=Psyvariar 2
+INFO=Success
+GFX=psyvariar2.png
+DIR=Z01_PSYVARIAR2
+

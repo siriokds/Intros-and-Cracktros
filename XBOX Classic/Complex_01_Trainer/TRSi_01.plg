@@ -1,0 +1,43 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: TRSi_01 - Xbox Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\SiRioKD\IMPOST~1\Temp\RSP1C.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "_XBOX" /D "NDEBUG" /Fp"Release/TRSi_01.pch" /YX /Fo"Release/" /Fd"Release/" /FD /G6 /Ztmp /c 
+"D:\xdk\XDK\Samples\Xbox\Common\Src\xbapp.cpp"
+"D:\xdk\XDK\Samples\Xbox\Common\Src\xbinput.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\SiRioKD\IMPOST~1\Temp\RSP1C.tmp" 
+Creating temporary file "C:\DOCUME~1\SiRioKD\IMPOST~1\Temp\RSP1D.tmp" with contents
+[
+xapilib.lib d3d8.lib d3dx8.lib xgraphics.lib dsound.lib dmusic.lib xnet.lib xboxkrnl.lib /nologo /incremental:no /pdb:"Release/default.pdb" /machine:I386 /out:"Release/default.exe" /subsystem:xbox /fixed:no /TMP /OPT:REF 
+.\Release\cGif.obj
+.\Release\KStars.obj
+.\Release\Main.obj
+.\FC_Lib.lib
+.\Release\xbapp.obj
+.\Release\xbinput.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\SiRioKD\IMPOST~1\Temp\RSP1D.tmp"
+Creating command line "imagebld.exe /nologo /stack:0x10000 /out:"Release/default.xbe" /limitmem  .\Release\default.exe "
+<h3>Output Window</h3>
+Compiling...
+xbapp.cpp
+xbinput.cpp
+Linking...
+Creating Xbox image...
+Error: Could not generate command line for the Xbox File Transfer tool.
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+default.xbe - 1 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

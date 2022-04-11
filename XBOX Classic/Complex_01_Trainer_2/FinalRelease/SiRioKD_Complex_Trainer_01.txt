@@ -1,0 +1,50 @@
+------------------------
+***  SiRioKD / TRSi ***
+        presents
+  
+ > Complex Trainer #1 <
+------------------------
+
+
+Trainer
+-------
+
+Addresses: 
+
+Trained Game Name at:    $3A980    (max 48 chars)
+Number of Options is at: $3A9C4    (max 32 options) 
+Option Texts starts at:  $3A9C8 
+Option Text Length:      32 chars  (2nd option at $3A9E8, 3rd option at $3AA08, ...)
+
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890/?!@.,()-\"':><+";
+
+- Game starts with "START GAME" option OR <START> joypad key.
+- Trainer data file (size = number of Options at $3A9BC) is saved to "E:\TDATA\cpx" file.
+- Trainer reboot and try to execute "D:\cpx" game executable.
+- Rename trainer file to "default.xbe" and game file to "cpx".
+
+
+ScrollText
+----------
+
+Address:	$3AF00	(max 512 CHARS, endtext with 'r' char)
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890:*?!()+-,./#"
+* Special chars: 'r' (lowercase) => restart
+
+
+Credits
+-------
+
+6 rows (40 chars each)
+
+ROW1: $3ADCC
+ROW2: $3ADF8
+ROW3: $3AE24
+ROW4: $3AE50
+ROW5: $3AE78
+ROW6: $3AEA8
+
+
+only uppercase, matrix = " ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890/?!@.,()-\"':><+";
+
+
